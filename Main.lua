@@ -1,4 +1,4 @@
-local ui = loadstring(game:HttpGet("https://pastebin.com/raw/KyAgbvAk"))()
+local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/Panel.lua"))()
 local plrs = game:GetService("Players")
 local rs = game:GetService("RunService")
 local char = plrs.LocalPlayer.Character or plrs.LocalPlayer.CharacterAdded:Wait()
