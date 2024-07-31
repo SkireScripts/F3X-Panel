@@ -7,7 +7,6 @@ local server = nil
 
 getgenv().settings = {
     ["loop kill"] = false;
-    ["rain"] = false;
 }
 
 local panel = ui:Window({
@@ -99,10 +98,83 @@ local function killplayer(target)
         if not server then print("server is nil") end
     end
 end
+local function createPart(parts, position, size, color, material, transparency, surfaceType, isSpawn, decalId)
+	local partType = isSpawn and "Spawn" or "Normal"
+	server:InvokeServer("CreatePart", partType, CFrame.new(unpack(position)), game.Workspace) task.wait()
+	server:InvokeServer("SyncColor", {{["Color"] = Color3.fromRGB(unpack(color)), ["Part"] = parts[#parts], ["UnionColoring"] = true}})
+	server:InvokeServer("SyncResize", {{["CFrame"] = CFrame.new(unpack(position)), ["Part"] = parts[#parts], ["Size"] = Vector3.new(unpack(size))}})
+
+	if surfaceType then
+		server:InvokeServer("SyncSurface", {{["Part"] = parts[#parts], ["Surfaces"] = surfaceType}})
+	end
+
+	server:InvokeServer("SyncMaterial", {{["Part"] = parts[#parts], ["Material"] = material, ["Transparency"] = transparency or 0}})
+
+	if decalId then
+		server:InvokeServer("CreateDecal", {{["Part"] = parts[#parts], ["DecalId"] = decalId}})
+	end
+end
+
+-- // builds tab
+
+local maps = builds:Section({Name = "Maps"})
+
+maps:Button({
+	Name = "Logs House";
+	Callback = function()
+		local parts = {}
+		local a = game.Workspace.ChildAdded:Connect(function(part)
+			parts[#parts+1]=part
+		end)
+
+		local logs_house = {
+			{position = {94.21, 731, -256.415}, size = {200, 1, 200}, color = {75, 151, 75}, texture = "Plastic", surface = {["Back"] = Enum.SurfaceType.Studs, ["Bottom"] = Enum.SurfaceType.Studs, ["Front"] = Enum.SurfaceType.Studs, ["Left"] = Enum.SurfaceType.Studs, ["Right"] = Enum.SurfaceType.Studs, ["Top"] = Enum.SurfaceType.Studs}},
+			{position = {99.529, 731.45, -265.385}, size = {26.596, 0.9, 30.143}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {110.018, 737.845, -250.963}, size = {5.251, 12.889, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {99.513, 743.551, -250.963}, size = {26.26, 4.132, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {89.018, 737.845, -250.963}, size = {5.251, 12.889, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {99.652, 733.56, -250.963}, size = {25.983, 4.319, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {89.018, 737.845, -279.963}, size = {5.251, 12.889, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {110.018, 737.845, -279.963}, size = {5.251, 12.889, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {99.513, 743.551, -279.963}, size = {26.26, 4.132, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {99.652, 733.56, -279.963}, size = {25.983, 4.319, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {112.087, 738.533, -265.935}, size = {1.112, 14.266, 29.059}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {86.946, 738.533, -274.6}, size = {1.141, 14.266, 11.729}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {86.946, 743.31, -265.443}, size = {1.141, 4.713, 30.044}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {86.946, 738.617, -256.264}, size = {1.141, 14.098, 11.687}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {99.518, 745.382, -265.527}, size = {26.085, 0.715, 29.716}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {99.653, 738.354, -250.982}, size = {16.277, 6.269, 0.164}, color = {255, 255, 255}, texture = "Plastic", transparency = 0.9},
+			{position = {99.653, 738.354, -279.893}, size = {16.277, 6.269, 0.164}, color = {255, 255, 255}, texture = "Plastic", transparency = 0.9},
+			{position = {74.905, 732.596, -275.768}, size = {0.309, 3.086, 0.254}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {75.06, 734.871, -275.359}, size = {2.571, 1.889, 0.356}, color = {124, 92, 70}, texture = "WoodPlanks"},
+			{position = {23.039, 732, -264.64}, size = {10, 1, 9}, color = {255, 255, 255}, texture = "Plastic", transparency = 0.5, part = "Spawn"}
+		}
+
+		for _, d in ipairs(logs_house) do
+			createPart(parts, d.position, d.size, d.color, d.texture, d.transparency, d.surface, d.part == "Spawn", d.decal)
+		end
+		
+		a:Disconnect()
+		
+		task.wait(1)
+		
+		for i,v in pairs(game.Workspace:GetDescendants()) do
+			if v:IsA("Part") or v:IsA("SpawnLocation") then
+				if not table.find(parts,v) then
+					for _,plr in pairs(plrs:GetPlayers()) do
+						if v.Parent ~= plr.Character then
+							v:Destroy()
+						end
+					end
+				end
+			end
+		end
+	end
+})
 
 -- // players tab
 
-local ats = players:Section({Name = "Admin type shit"})
+local ats = players:Section({Name = "Player Controls"})
 local target = ""
 
 ats:Input({
