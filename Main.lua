@@ -109,15 +109,12 @@ local function createPart(parts, position, size, color, material, transparency, 
 	end
 
 	server:InvokeServer("SyncMaterial", {{["Part"] = parts[#parts], ["Material"] = material, ["Transparency"] = transparency or 0}})
-
-	if decalId then
-		server:InvokeServer("CreateDecal", {{["Part"] = parts[#parts], ["DecalId"] = decalId}})
-	end
 end
 
 -- // builds tab
 
 local maps = builds:Section({Name = "Maps"})
+
 
 maps:Button({
 	Name = "Logs House";
@@ -163,7 +160,39 @@ maps:Button({
 				if not table.find(parts,v) then
 					for _,plr in pairs(plrs:GetPlayers()) do
 						if v.Parent ~= plr.Character then
-							v:Destroy()
+							server:InvokeServer("Remove",{v})
+						end
+					end
+				end
+			end
+		end
+	end
+})
+
+maps:Button({
+	Name = "Backrooms";
+	Callback = function()
+		local parts = {}
+		local a = game.Workspace.ChildAdded:Connect(function(part)
+			parts[#parts+1]=part
+		end)
+
+		local nds = loadstring(game:HttpGet("https://pastebin.com/raw/309Ky6M8"))()
+
+		for _, d in ipairs(nds) do
+			createPart(parts, d.position, d.size, d.color, d.texture, d.transparency, d.surface, d.part == "Spawn", d.decal)
+		end
+
+		a:Disconnect()
+
+		task.wait(1)
+
+		for i,v in pairs(game.Workspace:GetDescendants()) do
+			if v:IsA("Part") or v:IsA("SpawnLocation") then
+				if not table.find(parts,v) then
+					for _,plr in pairs(plrs:GetPlayers()) do
+						if v.Parent ~= plr.Character then
+							server:InvokeServer("Remove",{v})
 						end
 					end
 				end
