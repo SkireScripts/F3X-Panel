@@ -328,6 +328,8 @@ function UI:Window(winconfig)
 		G2L["sframe"]["Position"] = UDim2.new(0, 0, 0, 44);
 		G2L["sframe"]["Name"] = [[content]];
 
+        G2L["ut"] = Instance.new("UIListLayout", G2L["sframe"])
+		G2L["ut"]["Padding"] = UDim.new(0,4)
 		
 		G2L["2"] = Instance.new("Frame", panel.side.tabs);
 		G2L["2"]["BorderSizePixel"] = 0;
