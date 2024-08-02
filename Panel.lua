@@ -683,7 +683,7 @@ function UI:Window(winconfig)
 				G2L["1c"]["BorderSizePixel"] = 0;
 				G2L["1c"]["AutoButtonColor"] = false;
 				G2L["1c"]["BackgroundColor3"] = Color3.fromRGB(17, 17, 17);
-				G2L["1c"]["Size"] = UDim2.new(0, 232, 0, 27);
+				G2L["1c"]["Size"] = UDim2.new(1, -10, 0, 27);
 				G2L["1c"]["Name"] = [[Input]];
 				G2L["1c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 
