@@ -13,7 +13,7 @@ function UI:Window(winconfig)
 
 		-- StarterGui.Panel
 		G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"));
-        G2L["1"]["ResetOnSpawn"] = false;
+		G2L["1"]["ResetOnSpawn"] = false;
 		G2L["1"]["Name"] = winconfig.Name;
 
 		-- StarterGui.Panel.UI
@@ -70,7 +70,7 @@ function UI:Window(winconfig)
 		-- StarterGui.Panel.UI.side.Header.UIPadding
 		G2L["8"] = Instance.new("UIPadding", G2L["7"]);
 		G2L["8"]["PaddingLeft"] = UDim.new(0, 10);
-		
+
 		-- StarterGui.Panel.UI.side.tabs
 		G2L["ts"] = Instance.new("ScrollingFrame", G2L["4"])
 		G2L["ts"]["Size"] = UDim2.new(1,0,1,0)
@@ -80,11 +80,11 @@ function UI:Window(winconfig)
 		G2L["ts"]["ScrollBarImageTransparency"] = 1
 		G2L["ts"]["ScrollingDirection"] = Enum.ScrollingDirection.Y
 		G2L["ts"]["BackgroundTransparency"] = 1
-		
+
 		-- StarterGui.Panel.UI.side.tabs.UIListLayout
 		G2L["ut"] = Instance.new("UIListLayout", G2L["ts"])
 		G2L["ut"]["Padding"] = UDim.new(0,2)
-		
+
 		-- StarterGui.Panel.UI.side.tabs.UIPadding
 		G2L["up"] = Instance.new("UIPadding", G2L["ts"])
 		G2L["up"]["PaddingTop"] = UDim.new(0,26)
@@ -156,19 +156,19 @@ function UI:Window(winconfig)
 		G2L["16"]["Color"] = Color3.fromRGB(37, 37, 37);
 		G2L["16"]["Thickness"] = 0.6;
 		G2L["16"]["Transparency"] = 0.4;
-		
+
 		return G2L["1"];
 	end
 	local ui = initui()
 	local panel = ui.UI	
-	
+
 	game:GetService("UserInputService").InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == winconfig.Key then
 			panel.Visible = not panel.Visible
 		end
 	end)
 
-	
+
 	pcall(function() -- ui stuff
 		local function handler()
 			local module = {}
@@ -181,7 +181,7 @@ function UI:Window(winconfig)
 			local dragging = false
 
 			function module.makeResizable(obj:GuiObject, minSize)
-				
+
 				local resizer = Instance.new("Frame")
 				local dragger = Instance.new("ImageButton")
 				local UICorner = Instance.new("UICorner")
@@ -302,7 +302,7 @@ function UI:Window(winconfig)
 		resizer.makeDraggable(panel)
 	end)
 	local window = {}
-	
+
 	function window:AddTab(tabconfig)
 		local G2L, stab = {}, ""
 		G2L["page"] = Instance.new("Frame", panel.pages);
@@ -313,7 +313,7 @@ function UI:Window(winconfig)
 		G2L["page"]["Visible"] = tabconfig.Selected;
 		G2L["page"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 		G2L["page"]["Name"] = tabconfig.Name;
-		
+
 		G2L["sframe"] = Instance.new("ScrollingFrame", G2L["page"]);
 		G2L["sframe"]["Active"] = true;
 		G2L["sframe"]["BorderSizePixel"] = 0;
@@ -328,9 +328,10 @@ function UI:Window(winconfig)
 		G2L["sframe"]["Position"] = UDim2.new(0, 0, 0, 44);
 		G2L["sframe"]["Name"] = [[content]];
 
-        G2L["ut"] = Instance.new("UIListLayout", G2L["sframe"])
+		G2L["ut"] = Instance.new("UIListLayout", G2L["sframe"])
 		G2L["ut"]["Padding"] = UDim.new(0,4)
-		
+		G2L["ut"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center
+
 		G2L["2"] = Instance.new("Frame", panel.side.tabs);
 		G2L["2"]["BorderSizePixel"] = 0;
 		G2L["2"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
@@ -386,7 +387,7 @@ function UI:Window(winconfig)
 		G2L["8"]["Name"] = [[Icon]];
 		G2L["8"]["BackgroundTransparency"] = 1;
 		G2L["8"]["Position"] = UDim2.new(1, -25, 0.5, 0);
-		
+
 		stab = G2L["sframe"]
 		if tabconfig.Selected then
 			animate(G2L["2"].trigger,ti,{BackgroundColor3=Color3.fromRGB(36,36,36)})
@@ -394,7 +395,7 @@ function UI:Window(winconfig)
 			animate(G2L["2"].trigger.Icon,ti,{ImageColor3=Color3.fromRGB(227,227,227)})
 			animate(G2L["2"].trigger.Header,ti,{TextColor3=Color3.fromRGB(227,227,227)})
 		end
-		
+
 		G2L["4"].MouseButton1Click:Connect(function()
 			for i,v in pairs(panel.side.tabs:GetChildren()) do
 				if v:IsA("Frame") then
@@ -414,9 +415,9 @@ function UI:Window(winconfig)
 				end
 			end
 		end)
-		
+
 		local tab = {}
-		
+
 		function tab:Section(sectconfig)
 			local G2L = {}
 
@@ -516,9 +517,9 @@ function UI:Window(winconfig)
 			G2L["13"] = Instance.new("UIPadding", G2L["b"]);
 			G2L["13"]["PaddingTop"] = UDim.new(0, 10);
 			G2L["13"]["PaddingBottom"] = UDim.new(0, 6);
-			
+
 			local hidden = false
-			
+
 			G2L["a"].MouseButton1Click:Connect(function()
 				if hidden then
 					animate(G2L["a"],ti,{Rotation=0})
@@ -530,11 +531,11 @@ function UI:Window(winconfig)
 					hidden = true
 				end
 			end)
-			
+
 			local items = G2L["b"]
-			
+
 			local section = {}
-			
+
 			function section:Button(btnconfig)
 				local G2L = {}
 				-- StarterGui.ScreenGui.content.Open Section.items.Button
@@ -575,12 +576,12 @@ function UI:Window(winconfig)
 				G2L["12"]["Color"] = Color3.fromRGB(37, 37, 37);
 				G2L["12"]["Thickness"] = 0.6000000238418579;
 				G2L["12"]["Transparency"] = 0.4399999976158142;
-				
+
 				G2L["e"].MouseButton1Click:Connect(function()
 					btnconfig.Callback()
 				end)
 			end
-			
+
 			function section:Toggle(togconfig)
 				local G2L = {}
 				-- StarterGui.ScreenGui.content.Open Section.items.Toggle
@@ -653,9 +654,9 @@ function UI:Window(winconfig)
 				G2L["1b"]["Name"] = [[Icon]];
 				G2L["1b"]["BackgroundTransparency"] = 1;
 				G2L["1b"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
-				
+
 				local bool = false
-				
+
 				G2L["14"].MouseButton1Down:Connect(function()
 					if bool == false then
 						animate(G2L["19"],ti,{BackgroundColor3=Color3.fromRGB(255,179,26)})
@@ -668,7 +669,7 @@ function UI:Window(winconfig)
 					end
 					togconfig.Callback(bool)
 				end)
-				
+
 				if togconfig.Enabled then
 					animate(G2L["19"],ti,{BackgroundColor3=Color3.fromRGB(255,179,26)})
 					animate(G2L["1b"],ti,{ImageTransparency=0})
@@ -676,7 +677,7 @@ function UI:Window(winconfig)
 					togconfig.Callback(bool)
 				end
 			end
-			
+
 			function section:Input(inconfig)
 				local G2L = {}
 
@@ -752,19 +753,19 @@ function UI:Window(winconfig)
 				G2L["23"]["Text"] = inconfig.Text
 				G2L["23"]["Name"] = [[Box]];
 				G2L["23"]["ClearTextOnFocus"] = inconfig.ClearOnFocus;
-				
+
 				G2L["23"].FocusLost:Connect(function()
 					inconfig.Callback(G2L["23"].Text)
 				end)
 			end
-			
+
 			return section
-			
+
 		end
-		
+
 		return tab
 	end
-	
+
 	return window
 end
 
