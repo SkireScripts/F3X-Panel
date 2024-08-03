@@ -20,6 +20,11 @@ local builds = panel:AddTab({
     Icon = "7072706318",
     Selected = true
 })
+local Maps = panel:AddTab({
+    Name = "Maps",
+    Icon = "7072718631",
+    Selected = false
+})
 local players = panel:AddTab({
     Name = "Players",
     Icon = "7072724538",
@@ -98,107 +103,147 @@ local function killplayer(target)
         if not server then print("server is nil") end
     end
 end
-local function createPart(parts, position, size, color, material, transparency, surfaceType, isSpawn, decalId)
-	local partType = isSpawn and "Spawn" or "Normal"
-	server:InvokeServer("CreatePart", partType, CFrame.new(unpack(position)), game.Workspace) task.wait()
-	server:InvokeServer("SyncColor", {{["Color"] = Color3.fromRGB(unpack(color)), ["Part"] = parts[#parts], ["UnionColoring"] = true}})
-	server:InvokeServer("SyncResize", {{["CFrame"] = CFrame.new(unpack(position)), ["Part"] = parts[#parts], ["Size"] = Vector3.new(unpack(size))}})
 
-	if surfaceType then
-		server:InvokeServer("SyncSurface", {{["Part"] = parts[#parts], ["Surfaces"] = surfaceType}})
-	end
-
-	server:InvokeServer("SyncMaterial", {{["Part"] = parts[#parts], ["Material"] = material, ["Transparency"] = transparency or 0}})
+local function loadmap(map)
+	pcall(function()
+        local parts = {}
+        local track = game.Workspace.ChildAdded:Connect(function(part)
+            parts[#parts+1] = part
+        end)
+        local ci = 0
+        local function idk()
+            for i, part in pairs(map) do
+                if i > ci then
+                    ci+=1
+                    local partType = part.shape
+                    if part.shape == "Block" then partType = "Normal" end
+                    server:InvokeServer("CreatePart", partType, CFrame.new(unpack(part.cframe)), game.Workspace) task.wait()
+                end
+            end
+        end
+        idk();idk()
+        track:Disconnect()
+        print(map, parts)
+        for i,p in pairs(map) do
+            local part = parts[i]
+            server:InvokeServer("SyncColor", {{["Color"] = Color3.fromRGB(unpack(p.color)), ["Part"] = part, ["UnionColoring"] = true}})
+            server:InvokeServer("SyncResize", {{["CFrame"] = CFrame.new(unpack(p.cframe)), ["Part"] = part, ["Size"] = Vector3.new(unpack(p.size))}})
+            if p.surface then
+                server:InvokeServer("SyncSurface", {{["Part"] = part, ["Surfaces"] = p.surface}})
+            end
+            server:InvokeServer("SyncMaterial", {{["Part"] = part, ["Material"] = p.texture, ["Transparency"] = p.transparency, ["Reflectance"]=p.reflectance}})
+            server:InvokeServer("SyncRotate", {{["CFrame"]=CFrame.new(unpack(p.cframe)),["part"]=part}})
+            server:InvokeServer("SyncAnchor", {{["Anchored"]=p.anchored,["Part"]=part}})
+            server:InvokeServer("SetLocked", {part}, p.locked)
+            server:InvokeServer("SyncCollision",{{["CanCollide"]=p.cancollide,["Part"]=part}})
+            if p.decal then
+                server:InvokeServer("CreateTextures", {{["Face"]=p.decal.face,["Part"]=part,["TextureType"]="Decal"}})
+                server:InvokeServer("SyncTexture", {{["Face"]=p.decal.face,["Part"]=part,["Texture"]=p.decal.texture,["Transparency"]=p.decal.transparency,["TextureType"]="Decal"}})
+            end
+            if p.mesh then
+                server:InvokeServer("CreateMeshes", {{["Part"]=part}})
+                server:InvokeServer("SyncMesh", {{["Part"]=part,["TextureId"]=p.mesh.texture,["VertexColor"]=Vector3.new(unpack(p.mesh.vertexcolor)),["MeshType"]=p.mesh.meshtype,["Scale"]=Vector3.new(unpack(p.mesh.scale)),["Offset"]=Vector3.new(unpack(p.mesh.offset))}})
+                if p.mesh.meshtype == Enum.MeshType.FileMesh then
+                    server:InvokeServer("SyncMesh", {{["Part"]=part,["MeshId"]=p.mesh.meshid}})
+                end
+            end
+        end
+    end)
 end
 
 -- // builds tab
 
-local maps = builds:Section({Name = "Maps"})
+local b = builds:Section({Name = "Basic"})
+local id = ""
+b:Input({
+    Name = "Skybox id",
+    ClearOnFocus = false,
+    PlaceHolder = "rbxassetid",
+    Text = "",
+    Callback = function(t)
+        id = t
+    end
+})
 
+b:Button({
+    Name = "SkyBox";
+    Callback = function()
+        loadmap(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/skybox"))():load(id))
+    end
+})
+
+-- // maps tab
+
+local maps = Maps:Section({Name = "Maps"})
+local custommap = Maps:Section({Name = "Custom Map"})
+local savedmaps = Maps:Section({Name = "Saved Maps"})
+local function addsaved(name)
+    savedmaps:Button({
+        Name = name;
+        Callback = function()
+            loadmap(loadstring(readfile("f3x maps/"..name))())
+        end
+    })
+end
+if not isfolder("f3x maps") then makefolder("f3x maps") end
+for i,v in pairs(listfiles("f3x maps")) do
+    local filename = string.split(v,"/");filename=filename[#filename]
+    addsaved(filename)
+end
 
 maps:Button({
-	Name = "Logs House";
+	Name = "Tree House";
 	Callback = function()
-		local parts = {}
-		local a = game.Workspace.ChildAdded:Connect(function(part)
-			parts[#parts+1]=part
-		end)
-
-		local logs_house = {
-			{position = {94.21, 731, -256.415}, size = {200, 1, 200}, color = {75, 151, 75}, texture = "Plastic", surface = {["Back"] = Enum.SurfaceType.Studs, ["Bottom"] = Enum.SurfaceType.Studs, ["Front"] = Enum.SurfaceType.Studs, ["Left"] = Enum.SurfaceType.Studs, ["Right"] = Enum.SurfaceType.Studs, ["Top"] = Enum.SurfaceType.Studs}},
-			{position = {99.529, 731.45, -265.385}, size = {26.596, 0.9, 30.143}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {110.018, 737.845, -250.963}, size = {5.251, 12.889, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {99.513, 743.551, -250.963}, size = {26.26, 4.132, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {89.018, 737.845, -250.963}, size = {5.251, 12.889, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {99.652, 733.56, -250.963}, size = {25.983, 4.319, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {89.018, 737.845, -279.963}, size = {5.251, 12.889, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {110.018, 737.845, -279.963}, size = {5.251, 12.889, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {99.513, 743.551, -279.963}, size = {26.26, 4.132, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {99.652, 733.56, -279.963}, size = {25.983, 4.319, 1.003}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {112.087, 738.533, -265.935}, size = {1.112, 14.266, 29.059}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {86.946, 738.533, -274.6}, size = {1.141, 14.266, 11.729}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {86.946, 743.31, -265.443}, size = {1.141, 4.713, 30.044}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {86.946, 738.617, -256.264}, size = {1.141, 14.098, 11.687}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {99.518, 745.382, -265.527}, size = {26.085, 0.715, 29.716}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {99.653, 738.354, -250.982}, size = {16.277, 6.269, 0.164}, color = {255, 255, 255}, texture = "Plastic", transparency = 0.9},
-			{position = {99.653, 738.354, -279.893}, size = {16.277, 6.269, 0.164}, color = {255, 255, 255}, texture = "Plastic", transparency = 0.9},
-			{position = {74.905, 732.596, -275.768}, size = {0.309, 3.086, 0.254}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {75.06, 734.871, -275.359}, size = {2.571, 1.889, 0.356}, color = {124, 92, 70}, texture = "WoodPlanks"},
-			{position = {23.039, 732, -264.64}, size = {10, 1, 9}, color = {255, 255, 255}, texture = "Plastic", transparency = 0.5, part = "Spawn"}
-		}
-
-		for _, d in ipairs(logs_house) do
-			createPart(parts, d.position, d.size, d.color, d.texture, d.transparency, d.surface, d.part == "Spawn", d.decal)
-		end
-		
-		a:Disconnect()
-		
-		task.wait(1)
-		
-		for i,v in pairs(game.Workspace:GetDescendants()) do
-			if v:IsA("Part") or v:IsA("SpawnLocation") then
-				if not table.find(parts,v) then
-					for _,plr in pairs(plrs:GetPlayers()) do
-						if v.Parent ~= plr.Character then
-							server:InvokeServer("Remove",{v})
-						end
-					end
-				end
-			end
-		end
+		loadmap(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/tree-house.lua"))())
 	end
 })
 
 maps:Button({
-	Name = "Backrooms";
+	Name = "Tower";
 	Callback = function()
-		local parts = {}
-		local a = game.Workspace.ChildAdded:Connect(function(part)
-			parts[#parts+1]=part
-		end)
-
-		local nds = loadstring(game:HttpGet("https://pastebin.com/raw/309Ky6M8"))()
-
-		for _, d in ipairs(nds) do
-			createPart(parts, d.position, d.size, d.color, d.texture, d.transparency, d.surface, d.part == "Spawn", d.decal)
-		end
-
-		a:Disconnect()
-
-		task.wait(1)
-
-		for i,v in pairs(game.Workspace:GetDescendants()) do
-			if v:IsA("Part") or v:IsA("SpawnLocation") then
-				if not table.find(parts,v) then
-					for _,plr in pairs(plrs:GetPlayers()) do
-						if v.Parent ~= plr.Character then
-							server:InvokeServer("Remove",{v})
-						end
-					end
-				end
-			end
-		end
+		loadmap(loadstring(game:HttpGet("https://pastebin.com/raw/2bnc2AED"))())
 	end
+})
+
+maps:Button({
+	Name = "Doomspire";
+	Callback = function()
+		loadmap(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/doomspire.lua"))())
+	end
+})
+
+local url, name
+custommap:Input({
+    Name = "Custom Map",
+    ClearOnFocus = false,
+    PlaceHolder = "Map Source/Url",
+    Text = "",
+    Callback = function(t)
+        url = t
+    end
+})
+custommap:Button({
+	Name = "Load Map";
+	Callback = function()
+		loadmap(game:HttpGet(url))
+	end
+})
+custommap:Input({
+    Name = "Map Name",
+    ClearOnFocus = false,
+    PlaceHolder = "Map Name",
+    Text = "",
+    Callback = function(t)
+        name = t
+    end
+})
+custommap:Button({
+	Name = "Save Map";
+	Callback = function()
+		if not isfolder("f3x maps") then makefolder("f3x maps") end
+        writefile("f3x maps/"..name..".lua", game:HttpGet(url))
+        addsaved(name..".lua")
+    end
 })
 
 -- // players tab
