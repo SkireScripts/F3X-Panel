@@ -111,19 +111,19 @@ local function loadmap(map)
             parts[#parts+1] = part
         end)
         local ci = 0
-        local function idk()
+        local function mapper(b)
             for i, part in pairs(map) do
                 if i > ci then
                     ci+=1
                     local partType = part.shape
                     if part.shape == "Block" then partType = "Normal" end
-                    server:InvokeServer("CreatePart", partType, CFrame.new(unpack(part.cframe)), game.Workspace) task.wait()
+                    server:InvokeServer("CreatePart", partType, CFrame.new(unpack(part.cframe)), game.Workspace)
                 end
             end
+            if b then mapper() end
         end
-        idk();idk()
+        mapper(true)
         track:Disconnect()
-        print(map, parts)
         for i,p in pairs(map) do
             local part = parts[i]
             server:InvokeServer("SyncColor", {{["Color"] = Color3.fromRGB(unpack(p.color)), ["Part"] = part, ["UnionColoring"] = true}})
@@ -225,7 +225,7 @@ custommap:Input({
 custommap:Button({
 	Name = "Load Map";
 	Callback = function()
-		loadmap(game:HttpGet(url))
+		loadmap(loadstring(game:HttpGet(url))())
 	end
 })
 custommap:Input({
