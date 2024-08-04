@@ -2,7 +2,6 @@ local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScrip
 local plrs = game:GetService("Players")
 local rs = game:GetService("RunService")
 local char = plrs.LocalPlayer.Character or plrs.LocalPlayer.CharacterAdded:Wait()
-local tool = nil
 local server = nil
 
 getgenv().settings = {
@@ -36,17 +35,15 @@ local players = panel:AddTab({
 local function getserver()
     pcall(function()
         if char then
-            for _, v in pairs(char:GetChildren()) do
-                if v:IsA("Tool") and v:FindFirstChild("SyncAPI") and v.SyncAPI:FindFirstChild("ServerEndpoint") then
-                    tool = v
-                    server = v.SyncAPI.ServerEndpoint
-                end
+            for _, v in pairs(char:GetDescendants()) do
+                if v.Name == "SyncAPI" then
+                        server = v.SyncAPI:FindFirstChildWhichIsA("RemoteFunction")
+                    end
             end
             if not server then
-                for _, v in pairs(plrs.LocalPlayer.Backpack:GetChildren()) do
-                    if v:IsA("Tool") and v:FindFirstChild("SyncAPI") and v.SyncAPI:FindFirstChild("ServerEndpoint") then
-                        tool = v
-                        server = v.SyncAPI.ServerEndpoint
+                for _, v in pairs(plrs.LocalPlayer.Backpack:GetDescendants()) do
+                    if v.Name == "SyncAPI" then
+                        server = v.SyncAPI:FindFirstChildWhichIsA("RemoteFunction")
                     end
                 end
             end
@@ -59,7 +56,6 @@ rs.Stepped:Connect(function()
 end)
 
 plrs.LocalPlayer.CharacterAdded:Connect(function(a)
-    tool = nil
     server = nil
 end)
 
