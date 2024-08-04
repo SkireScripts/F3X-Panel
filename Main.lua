@@ -37,13 +37,13 @@ local function getserver()
         if char then
             for _, v in pairs(char:GetDescendants()) do
                 if v.Name == "SyncAPI" then
-                        server = v.SyncAPI:FindFirstChildWhichIsA("RemoteFunction")
-                    end
+                    server = v:FindFirstChildWhichIsA("RemoteFunction")
+                end
             end
             if not server then
                 for _, v in pairs(plrs.LocalPlayer.Backpack:GetDescendants()) do
                     if v.Name == "SyncAPI" then
-                        server = v.SyncAPI:FindFirstChildWhichIsA("RemoteFunction")
+                        server = v:FindFirstChildWhichIsA("RemoteFunction")
                     end
                 end
             end
