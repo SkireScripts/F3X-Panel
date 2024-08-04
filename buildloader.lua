@@ -1,7 +1,7 @@
 local plrs = game:GetService("Players")
 local rs = game:GetService("RunService")
 local char = plrs.LocalPlayer.Character or plrs.LocalPlayer.CharacterAdded:Wait()
-local term = require(script.Parent.Terminal)
+local term = loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/Terminal.lua"))()
 local buildloader = {}
 
 function buildloader:LoadBuild(map, server)
