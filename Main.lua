@@ -6,6 +6,8 @@ local server = nil
 
 getgenv().settings = {
     ["loop kill"] = false;
+    ["burn players"] = false;
+    ["burn builds"] = false;
 }
 
 local panel = ui:Window({
@@ -18,6 +20,11 @@ local builds = panel:AddTab({
     Name = "Builds",
     Icon = "7072706318",
     Selected = true
+})
+local misc = panel:AddTab({
+	Name = "Misc",
+	Icon = "7072723685",
+	Selected = false
 })
 local Maps = panel:AddTab({
     Name = "Maps",
@@ -100,51 +107,8 @@ local function killplayer(target)
     end
 end
 
-local function loadmap(map)
-	pcall(function()
-        local parts = {}
-        local track = game.Workspace.ChildAdded:Connect(function(part)
-            parts[#parts+1] = part
-        end)
-        local ci = 0
-        local function mapper(b)
-            for i, part in pairs(map) do
-                if i > ci then
-                    ci+=1
-                    local partType = part.shape
-                    if part.shape == "Block" then partType = "Normal" end
-                    server:InvokeServer("CreatePart", partType, CFrame.new(unpack(part.cframe)), game.Workspace)
-                end
-            end
-            if b then mapper() end
-        end
-        mapper(true)
-        track:Disconnect()
-        for i,p in pairs(map) do
-            local part = parts[i]
-            server:InvokeServer("SyncColor", {{["Color"] = Color3.fromRGB(unpack(p.color)), ["Part"] = part, ["UnionColoring"] = true}})
-            server:InvokeServer("SyncResize", {{["CFrame"] = CFrame.new(unpack(p.cframe)), ["Part"] = part, ["Size"] = Vector3.new(unpack(p.size))}})
-            if p.surface then
-                server:InvokeServer("SyncSurface", {{["Part"] = part, ["Surfaces"] = p.surface}})
-            end
-            server:InvokeServer("SyncMaterial", {{["Part"] = part, ["Material"] = p.texture, ["Transparency"] = p.transparency, ["Reflectance"]=p.reflectance}})
-            server:InvokeServer("SyncRotate", {{["CFrame"]=CFrame.new(unpack(p.cframe)),["part"]=part}})
-            server:InvokeServer("SyncAnchor", {{["Anchored"]=p.anchored,["Part"]=part}})
-            server:InvokeServer("SetLocked", {part}, p.locked)
-            server:InvokeServer("SyncCollision",{{["CanCollide"]=p.cancollide,["Part"]=part}})
-            if p.decal then
-                server:InvokeServer("CreateTextures", {{["Face"]=p.decal.face,["Part"]=part,["TextureType"]="Decal"}})
-                server:InvokeServer("SyncTexture", {{["Face"]=p.decal.face,["Part"]=part,["Texture"]=p.decal.texture,["Transparency"]=p.decal.transparency,["TextureType"]="Decal"}})
-            end
-            if p.mesh then
-                server:InvokeServer("CreateMeshes", {{["Part"]=part}})
-                server:InvokeServer("SyncMesh", {{["Part"]=part,["TextureId"]=p.mesh.texture,["VertexColor"]=Vector3.new(unpack(p.mesh.vertexcolor)),["MeshType"]=p.mesh.meshtype,["Scale"]=Vector3.new(unpack(p.mesh.scale)),["Offset"]=Vector3.new(unpack(p.mesh.offset))}})
-                if p.mesh.meshtype == Enum.MeshType.FileMesh then
-                    server:InvokeServer("SyncMesh", {{["Part"]=part,["MeshId"]=p.mesh.meshid}})
-                end
-            end
-        end
-    end)
+local function loadbuild(map)
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/buildloader.lua"))():LoadBuild(map, server)
 end
 
 -- // builds tab
@@ -164,8 +128,93 @@ b:Input({
 b:Button({
     Name = "SkyBox";
     Callback = function()
-        loadmap(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/skybox"))():load(id))
+        loadbuild(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/skybox"))():load(id))
     end
+})
+
+-- // misc tab
+
+local fire = misc:Section({Name = "Fire"})
+local immune = "none"
+
+fire:Input({
+	Name = "Immune Player";
+	Text = "none";
+	PlaceHolder = "player";
+	ClearOnFocus = false;
+	Callback = function(t)
+		immune = getplayer(t)
+		if immune == nil then
+			if t:lower() == "me" then
+				immune = plrs.LocalPlayer
+			elseif t:lower():match("no") then
+				immune = "none"
+			end
+		end
+	end
+})
+
+fire:Toggle({
+	Name = "Burn all players";
+	Enabled = false;
+	Callback = function(bool)
+		getgenv().settings["burn players"]=bool
+		while getgenv().settings["burn players"] do wait()
+			local parts = {}
+			for i,v in pairs(plrs:GetPlayers()) do
+				if typeof(immune) == "string" and immune == "none" then
+					if v.Character then
+						for _,b in pairs(v.Character:GetChildren()) do
+							if b:IsA("Part") or b:IsA("MeshPart") then
+								parts[#parts+1] = {
+									["DecorationType"] = "Fire";
+									["Part"] = b;
+								}
+							end
+						end
+					end
+				else
+					if v ~= immune then
+						if v.Character then
+							for _,b in pairs(v.Character:GetChildren()) do
+								if b:IsA("Part") or b:IsA("MeshPart") then
+									parts[#parts+1] = {
+										["DecorationType"] = "Fire";
+										["Part"] = b;
+									}
+								end
+							end
+						end
+					end
+				end
+			end
+			server:InvokeServer("CreateDecorations",parts)
+			parts={}
+		end
+	end
+})
+
+fire:Toggle({
+	Name = "Burn all builds";
+	Enabled = false;
+	Callback = function(bool)
+		getgenv().settings["burn builds"]=bool
+		while getgenv().settings["burn builds"] do wait()
+			local parts = {}
+			for i,v in pairs(game.Workspace:GetDescendants()) do
+				if not plrs:GetPlayerFromCharacter(v.Parent) then
+					if v:IsA("Part") or v:IsA("SpawnLocation") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") or v:IsA("Seat") or v:IsA("MeshPart") or v:IsA("VehicleSeat") then
+						parts[#parts+1] = {
+							["DecorationType"] = "Fire";
+							["Part"] = v;
+						}	
+					end
+				end
+			end
+			server:InvokeServer("CreateDecorations",parts)
+			parts={}
+		end
+	end
 })
 
 -- // maps tab
@@ -177,7 +226,7 @@ local function addsaved(name)
     savedmaps:Button({
         Name = name;
         Callback = function()
-            loadmap(loadstring(readfile("f3x maps/"..name))())
+            loadbuild(loadstring(readfile("f3x maps/"..name))())
         end
     })
 end
@@ -190,21 +239,21 @@ end
 maps:Button({
 	Name = "Tree House";
 	Callback = function()
-		loadmap(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/tree-house.lua"))())
+		loadbuild(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/tree-house.lua"))())
 	end
 })
 
 maps:Button({
 	Name = "Tower";
 	Callback = function()
-		loadmap(loadstring(game:HttpGet("https://pastebin.com/raw/2bnc2AED"))())
+		loadbuild(loadstring(game:HttpGet("https://pastebin.com/raw/2bnc2AED"))())
 	end
 })
 
 maps:Button({
 	Name = "Doomspire";
 	Callback = function()
-		loadmap(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/doomspire.lua"))())
+		loadbuild(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/doomspire.lua"))())
 	end
 })
 
@@ -221,7 +270,7 @@ custommap:Input({
 custommap:Button({
 	Name = "Load Map";
 	Callback = function()
-		loadmap(loadstring(game:HttpGet(url))())
+		loadbuild(loadstring(game:HttpGet(url))())
 	end
 })
 custommap:Input({
