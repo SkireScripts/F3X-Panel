@@ -3,7 +3,7 @@ local term = {}
 local function newui(header)
 	local G2L = {};
 	-- StarterGui.Terminal
-	G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+	G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"));
 	G2L["1"]["Name"] = [[Terminal]];
 	G2L["1"]["ResetOnSpawn"] = false;
 
