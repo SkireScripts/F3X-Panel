@@ -1,11 +1,11 @@
 local plrs = game:GetService("Players")
 local rs = game:GetService("RunService")
 local char = plrs.LocalPlayer.Character or plrs.LocalPlayer.CharacterAdded:Wait()
-local term = loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/Terminal.lua"))()
+local term = require(script.Parent.Terminal)
 local buildloader = {}
 
 function buildloader:LoadBuild(map, server)
-	local a = term:Window("Build Loader v1.3")
+	local a = term:Window("Build Loader v1.4")
 	local parts = {}
 	local track = game.Workspace.ChildAdded:Connect(function(part)
 		parts[#parts+1] = part
@@ -71,44 +71,74 @@ function buildloader:LoadBuild(map, server)
 			Color = Color3.fromRGB(255,255,255);
 			Content = "Setting Properties...";
 		})
-
-		local progress2 = 0
-		local progresstext2 = a:Log({
-			Color = Color3.fromRGB(255,255,255);
-			Content = "Progress: "..progress2.."%\n[▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁]";
-		})
-
+	
+		local properties = {
+			Colors = {},
+			Resize = {},
+			Surface = {},
+			Material = {},
+			Rotate = {},
+			Anchor = {},
+			Locked = {},
+			Collision = {},
+			Decal = {},
+			Mesh = {}
+		}
+		
+		for i, p in pairs(map) do
+			local part = parts[i]
+			properties.Colors[#properties.Colors+1] = {["Color"] = Color3.fromRGB(unpack(p.color)), ["Part"] = part, ["UnionColoring"] = true}
+			properties.Resize[#properties.Resize+1] = {["CFrame"] = CFrame.new(unpack(p.cframe)), ["Part"] = part, ["Size"] = Vector3.new(unpack(p.size))}
+			if p.surface then
+				properties.Surface[#properties.Surface+1] = {["Part"] = part, ["Surfaces"] = p.surface}
+			end
+			properties.Material[#properties.Material+1] = {["Part"] = part, ["Material"] = p.texture, ["Transparency"] = p.transparency, ["Reflectance"] = p.reflectance}
+			properties.Rotate[#properties.Rotate+1] = {["CFrame"] = CFrame.new(unpack(p.cframe)), ["Part"] = part}
+			properties.Anchor[#properties.Anchor+1] = {["Anchored"] = p.anchored, ["Part"] = part}
+			properties.Locked[#properties.Locked+1] = {part}
+			properties.Collision[#properties.Collision+1] = {["CanCollide"] = p.cancollide, ["Part"] = part}
+			if p.decal then
+				properties.Decal[#properties.Decal+1] = {["Face"] = p.decal.face, ["Part"] = part, ["Texture"] = p.decal.texture, ["Transparency"] = p.decal.transparency, ["TextureType"] = "Decal"}
+			end
+			if p.mesh then
+				local meshProps = {
+					["Part"] = part,
+					["TextureId"] = p.mesh.texture,
+					["VertexColor"] = Vector3.new(unpack(p.mesh.vertexcolor)),
+					["MeshType"] = p.mesh.meshtype,
+					["Scale"] = Vector3.new(unpack(p.mesh.scale)),
+					["Offset"] = Vector3.new(unpack(p.mesh.offset))
+				}
+				if p.mesh.meshtype == Enum.MeshType.FileMesh then
+					meshProps["MeshId"] = p.mesh.meshid
+				end
+				properties.Mesh[#properties.Mesh+1] = meshProps
+			end
+		end
 		local s,x = pcall(function()
 			for i, p in pairs(map) do
 				local part = parts[i]
-				server:InvokeServer("SyncColor", {{["Color"] = Color3.fromRGB(unpack(p.color)), ["Part"] = part, ["UnionColoring"] = true}})
-				server:InvokeServer("SyncResize", {{["CFrame"] = CFrame.new(unpack(p.cframe)), ["Part"] = part, ["Size"] = Vector3.new(unpack(p.size))}})
+				server:InvokeServer("SyncColor", properties.Colors)
+				server:InvokeServer("SyncResize", properties.Resize)
 				if p.surface then
-					server:InvokeServer("SyncSurface", {{["Part"] = part, ["Surfaces"] = p.surface}})
+					server:InvokeServer("SyncSurface", properties.Surface)
 				end
-				server:InvokeServer("SyncMaterial", {{["Part"] = part, ["Material"] = p.texture, ["Transparency"] = p.transparency, ["Reflectance"]=p.reflectance}})
-				server:InvokeServer("SyncRotate", {{["CFrame"] = CFrame.new(unpack(p.cframe)), ["part"] = part}})
-				server:InvokeServer("SyncAnchor", {{["Anchored"] = p.anchored, ["Part"] = part}})
-				server:InvokeServer("SetLocked", {part}, true)
-				server:InvokeServer("SyncCollision", {{["CanCollide"] = p.cancollide, ["Part"] = part}})
+				server:InvokeServer("SyncMaterial", properties.Material)
+				server:InvokeServer("SyncRotate", properties.Rotate)
+				server:InvokeServer("SyncAnchor", properties.Anchor)
+				server:InvokeServer("SetLocked", properties.Locked, true)
+				server:InvokeServer("SyncCollision", properties.Collision)
 				if p.decal then
-					server:InvokeServer("CreateTextures", {{["Face"] = p.decal.face, ["Part"] = part, ["TextureType"] = "Decal"}})
-					server:InvokeServer("SyncTexture", {{["Face"] = p.decal.face, ["Part"] = part, ["Texture"] = p.decal.texture, ["Transparency"] = p.decal.transparency, ["TextureType"] = "Decal"}})
+					server:InvokeServer("CreateTextures", properties.Decal)
+					--server:InvokeServer("SyncTexture", {{["Face"] = p.decal.face, ["Part"] = part, ["Texture"] = p.decal.texture, ["Transparency"] = p.decal.transparency, ["TextureType"] = "Decal"}})
 				end
 				if p.mesh then
-					server:InvokeServer("CreateMeshes", {{["Part"] = part}})
-					server:InvokeServer("SyncMesh", {{["Part"] = part, ["TextureId"] = p.mesh.texture, ["VertexColor"] = Vector3.new(unpack(p.mesh.vertexcolor)), ["MeshType"] = p.mesh.meshtype, ["Scale"] = Vector3.new(unpack(p.mesh.scale)), ["Offset"] = Vector3.new(unpack(p.mesh.offset))}})
-					if p.mesh.meshtype == Enum.MeshType.FileMesh then
-						server:InvokeServer("SyncMesh", {{["Part"] = part, ["MeshId"] = p.mesh.meshid}})
-					end
+					server:InvokeServer("CreateMeshes", properties.Mesh)
+					--server:InvokeServer("SyncMesh", {{["Part"] = part, ["TextureId"] = p.mesh.texture, ["VertexColor"] = Vector3.new(unpack(p.mesh.vertexcolor)), ["MeshType"] = p.mesh.meshtype, ["Scale"] = Vector3.new(unpack(p.mesh.scale)), ["Offset"] = Vector3.new(unpack(p.mesh.offset))}})
+					--if p.mesh.meshtype == Enum.MeshType.FileMesh then
+					--server:InvokeServer("SyncMesh", {{["Part"] = part, ["MeshId"] = p.mesh.meshid}})
+					--end
 				end
-				progress2 = i
-				local percentage2 = math.floor((progress2 / total) * 100)
-				progresstext2:Edit({
-					Color = progresstext2:GetColor();
-					Content = "Progress: "..percentage2.."%\n"..getvisualbar(progress2, total, 20);
-				})
-				rs.Heartbeat:Wait()
 			end
 		end)
 
