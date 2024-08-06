@@ -5,7 +5,7 @@ local term = require(script.Parent.Terminal)
 local buildloader = {}
 
 function buildloader:LoadBuild(map, server)
-	local a = term:Window("Build Loader v1.4")
+	local a = term:Window("Build Loader v1.3")
 	local parts = {}
 	local track = game.Workspace.ChildAdded:Connect(function(part)
 		parts[#parts+1] = part
@@ -34,6 +34,7 @@ function buildloader:LoadBuild(map, server)
 		return string.format("[%s%s]", filled, empty2)
 	end
 
+	local time = tick()
 	local s,x = pcall(function()
 		local function mapper()
 			for i, part in pairs(map) do
@@ -82,6 +83,7 @@ function buildloader:LoadBuild(map, server)
 			Locked = {},
 			Collision = {},
 			Decal = {},
+			SyncDecal = {},
 			Mesh = {}
 		}
 		
@@ -99,6 +101,7 @@ function buildloader:LoadBuild(map, server)
 			properties.Collision[#properties.Collision+1] = {["CanCollide"] = p.cancollide, ["Part"] = part}
 			if p.decal then
 				properties.Decal[#properties.Decal+1] = {["Face"] = p.decal.face, ["Part"] = part, ["Texture"] = p.decal.texture, ["Transparency"] = p.decal.transparency, ["TextureType"] = "Decal"}
+				properties.SyncDecal[#properties.SyncDecal+1] = {["Face"] = p.decal.face, ["Part"] = part, ["Texture"] = p.decal.texture, ["Transparency"] = p.decal.transparency, ["TextureType"] = "Decal"}
 			end
 			if p.mesh then
 				local meshProps = {
@@ -130,6 +133,7 @@ function buildloader:LoadBuild(map, server)
 				server:InvokeServer("SyncCollision", properties.Collision)
 				if p.decal then
 					server:InvokeServer("CreateTextures", properties.Decal)
+					server:InvokeServer("SyncTexture", properties.SyncDecal)
 					--server:InvokeServer("SyncTexture", {{["Face"] = p.decal.face, ["Part"] = part, ["Texture"] = p.decal.texture, ["Transparency"] = p.decal.transparency, ["TextureType"] = "Decal"}})
 				end
 				if p.mesh then
@@ -141,18 +145,34 @@ function buildloader:LoadBuild(map, server)
 				end
 			end
 		end)
+		
+		local finish = tick()
 
+		local elapsed = finish - time
+		local ftime
+
+		if elapsed < 60 then
+			ftime = string.format("Finished in %.0fs", elapsed)
+		elseif elapsed < 3600 then
+			local minutes = math.floor(elapsed / 60)
+			local seconds = elapsed % 60
+			ftime = string.format("Finished in %dm %.0fs", minutes, seconds)
+		else
+			local hours = math.floor(elapsed / 3600)
+			local minutes = math.floor((elapsed % 3600) / 60)
+			ftime = string.format("Finished in %dh %dm", hours, minutes)
+		end
+		
 		if not s then
 			a:Log({
 				Color = Color3.fromRGB(255, 65, 65);
-				Content = "[ERROR]: "..x
-			})
-		else
-			a:Log({
-				Color = Color3.fromRGB(84, 255, 84);
-				Content = "Done! (you can close this now)"
+				Content = "[IGNORABLE][ERROR]: "..x
 			})
 		end
+		a:Log({
+			Color = Color3.fromRGB(84, 255, 84);
+			Content = "Done! | "..ftime
+		})
 		a:Complete()
 	end
 end
