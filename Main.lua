@@ -6,8 +6,8 @@ local server = nil
 
 getgenv().settings = {
     ["loop kill"] = false;
-    ["burn players"] = false;
-    ["burn builds"] = false;
+    ["loop tools"] = false;
+    ["burn"] = false;
 }
 
 local panel = ui:Window({
@@ -21,8 +21,8 @@ local builds = panel:AddTab({
     Icon = "7072706318",
     Selected = true
 })
-local misc = panel:AddTab({
-	Name = "Misc",
+local grief = panel:AddTab({
+	Name = "Grief",
 	Icon = "7072723685",
 	Selected = false
 })
@@ -80,31 +80,90 @@ local function getplayer(str)
     return nil
 end
 
+
 local function killplayer(target)
-    if target and server then
-        if typeof(target) ~= "string" then
-            pcall(function()
-                server:InvokeServer("Remove", {target.Character.Head})
-            end)
-        elseif target == "others" then
-            for _, plr in pairs(plrs:GetPlayers()) do
-                if plr ~= plrs.LocalPlayer then
-                    pcall(function()
-                        server:InvokeServer("Remove", {plr.Character.Head})
-                    end)
+	if target and server then
+		if typeof(target) ~= "string" then
+			pcall(function()
+				server:InvokeServer("Remove", {target.Character.Head})
+			end)
+		elseif target == "others" then
+			local heads = {}
+			for _, plr in pairs(plrs:GetPlayers()) do
+				if plr ~= plrs.LocalPlayer then
+					heads[#heads+1] = plr.Character.Head
+				end
+			end
+			pcall(function()
+				server:InvokeServer("Remove", heads)
+			end)
+		elseif target == "all" then
+			local heads = {}
+			for _, plr in pairs(plrs:GetPlayers()) do
+				heads[#heads+1] = plr.Character.Head
+			end
+			pcall(function()
+				server:InvokeServer("Remove", heads)
+			end)
+		end
+	end
+end
+
+local function removetools(target)
+	if target and server then
+		if typeof(target) ~= "string" then
+			local tools = {}
+			for _,tool in pairs(target.Character:GetChildren()) do
+				if tool:IsA("Tool") then
+					tools[#tools+1] = tool
+				end
+			end
+			for _,tool in pairs(target.Backpack:GetChildren()) do
+				if tool:IsA("Tool") then
+					tools[#tools+1] = tool
+				end
+			end
+			pcall(function()
+				server:InvokeServer("Remove", tools)
+			end)
+		elseif target == "others" then
+			local tools = {}
+			for i,v in pairs(plrs:GetPlayers()) do
+                if v~=plrs.LocalPlayer then
+                    for _,tool in pairs(v.Character:GetChildren()) do
+                        if tool:IsA("Tool") then
+                            tools[#tools+1] = tool
+                        end
+                    end
+                    for _,tool in pairs(v.Backpack:GetChildren()) do
+                        if tool:IsA("Tool") then
+                            tools[#tools+1] = tool
+                        end
+                    end
                 end
             end
-        elseif target == "all" then
-            for _, plr in pairs(plrs:GetPlayers()) do
-                pcall(function()
-                    server:InvokeServer("Remove", {plr.Character.Head})
-                end)
+			pcall(function()
+				server:InvokeServer("Remove", tools)
+			end)
+		elseif target == "all" then
+			local tools = {}
+			for i,v in pairs(plrs:GetPlayers()) do
+                for _,tool in pairs(v.Character:GetChildren()) do
+                    if tool:IsA("Tool") then
+                        tools[#tools+1] = tool
+                    end
+                end
+                for _,tool in pairs(v.Backpack:GetChildren()) do
+                    if tool:IsA("Tool") then
+                        tools[#tools+1] = tool
+                    end
+                end
             end
-        end
-    else
-        if not target then print("target is nil") end
-        if not server then print("server is nil") end
-    end
+			pcall(function()
+				server:InvokeServer("Remove", tools)
+			end)
+		end
+	end
 end
 
 local function loadbuild(map)
@@ -133,87 +192,92 @@ b:Button({
 })
 
 -- // misc tab
+-- // grief tab
 
-local fire = misc:Section({Name = "Fire"})
-local immune = "none"
+local ggrief = grief:Section({Name = "Grief"})
+local size,decal = 6, ""
 
-fire:Input({
-	Name = "Immune Player";
-	Text = "none";
-	PlaceHolder = "player";
+ggrief:Input({
+	Name = "Size";
 	ClearOnFocus = false;
-	Callback = function(t)
-		immune = getplayer(t)
-		if immune == nil then
-			if t:lower() == "me" then
-				immune = plrs.LocalPlayer
-			elseif t:lower():match("no") then
-				immune = "none"
-			end
-		end
+	Text = "6";
+	PlaceHolder = 'Fire Size';
+	Callback = function(a)
+		size = tonumber(a)
 	end
 })
-
-fire:Toggle({
-	Name = "Burn all players";
+ggrief:Toggle({
+	Name = "Burn all";
 	Enabled = false;
 	Callback = function(bool)
-		getgenv().settings["burn players"]=bool
-		while getgenv().settings["burn players"] do wait()
-			local parts = {}
-			for i,v in pairs(plrs:GetPlayers()) do
-				if typeof(immune) == "string" and immune == "none" then
-					if v.Character then
-						for _,b in pairs(v.Character:GetChildren()) do
-							if b:IsA("Part") or b:IsA("MeshPart") then
-								parts[#parts+1] = {
-									["DecorationType"] = "Fire";
-									["Part"] = b;
-								}
-							end
-						end
-					end
-				else
-					if v ~= immune then
-						if v.Character then
-							for _,b in pairs(v.Character:GetChildren()) do
-								if b:IsA("Part") or b:IsA("MeshPart") then
-									parts[#parts+1] = {
-										["DecorationType"] = "Fire";
-										["Part"] = b;
-									}
-								end
-							end
-						end
-					end
-				end
-			end
-			server:InvokeServer("CreateDecorations",parts)
-			parts={}
-		end
-	end
-})
-
-fire:Toggle({
-	Name = "Burn all builds";
-	Enabled = false;
-	Callback = function(bool)
-		getgenv().settings["burn builds"]=bool
-		while getgenv().settings["burn builds"] do wait()
+		getgenv().settings.burn = bool
+		while getgenv().settings.burn do wait()
 			local parts = {}
 			for i,v in pairs(game.Workspace:GetDescendants()) do
-				if not plrs:GetPlayerFromCharacter(v.Parent) then
-					if v:IsA("Part") or v:IsA("SpawnLocation") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") or v:IsA("Seat") or v:IsA("MeshPart") or v:IsA("VehicleSeat") then
-						parts[#parts+1] = {
-							["DecorationType"] = "Fire";
-							["Part"] = v;
-						}	
-					end
+				if v:IsA("Part") or v:IsA("SpawnLocation") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") or v:IsA("Seat") or v:IsA("MeshPart") or v:IsA("VehicleSeat") then
+					parts[#parts+1] = {
+						["DecorationType"] = "Fire";
+						["Part"] = v;
+						["Size"] = size;
+					}	
 				end
 			end
 			server:InvokeServer("CreateDecorations",parts)
 			parts={}
 		end
+	end
+})
+ggrief:Button({
+	Name = "Remove Fire";
+	Callback = function()
+		local parts = {}
+		for i,v in pairs(game.Workspace:GetDescendants()) do
+			if v:IsA("Fire") then
+				parts[#parts+1] = v
+			end
+		end
+		server:InvokeServer("Remove",parts)
+	end
+})
+ggrief:Button({
+	Name = "Unanchor all";
+	Callback = function()
+		local parts = {}
+		for i,v in pairs(game.Workspace:GetDescendants()) do
+			if not plrs:GetPlayerFromCharacter(v:FindFirstAncestorWhichIsA("Model")) then
+				if v:IsA("Part") or v:IsA("SpawnLocation") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") or v:IsA("Seat") or v:IsA("MeshPart") or v:IsA("VehicleSeat") then
+					parts[#parts+1] = {false,["Part"]=v}
+				end
+			end
+		end
+		server:InvokeServer("SyncAnchor",parts)
+	end
+})
+ggrief:Input({
+	Name = "Decal ID";
+	ClearOnFocus = false;
+	Text = "";
+	PlaceHolder = "Decal";
+	Callback = function(a)
+		decal = "rbxassetid://"..a
+	end
+})
+ggrief:Button({
+	Name = "decal all (top)",
+	Callback = function()
+		local parts = {}
+		for _, v in pairs(game.Workspace:GetDescendants()) do
+			if v:IsA("Part") or v:IsA("SpawnLocation") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") or v:IsA("Seat") or v:IsA("MeshPart") or v:IsA("VehicleSeat") then
+				parts[#parts+1] = {
+					Part = v;
+					Face = Enum.NormalId.Top;
+					TextureType = "Decal";
+					Texture = decal;
+				}
+			end
+		end
+		server:InvokeServer("CreateTextures", parts)
+		server:InvokeServer("SyncTexture", parts)
 	end
 })
 
@@ -324,6 +388,26 @@ ats:Toggle({
         while true do wait()
              if getgenv().settings["loop kill"] then
                killplayer(target)
+            end
+        end
+    end
+})
+
+ats:Button({
+    Name = "Remove tools",
+    Callback = function()
+        removetools(target)
+    end
+})
+
+ats:Toggle({
+    Name = "Loop remove tools",
+    Enabled = false,
+    Callback = function(b)
+        getgenv().settings["loop tools"] = b
+        while true do wait()
+             if getgenv().settings["loop tools"] then
+               removetools(target)
             end
         end
     end
