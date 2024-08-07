@@ -365,6 +365,9 @@ function UI:Window(winconfig)
 		G2L["sframe"]["Position"] = UDim2.new(0, 0, 0, 44);
 		G2L["sframe"]["Name"] = [[content]];
 
+		G2L["dsfd"] = Instance.new("UIListLayout", G2L["sframe"])
+		G2L["dsfd"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center
+		G2L["dsfd"]["Padding"] = UDim.new(0,5)
 
 		G2L["2"] = Instance.new("Frame", panel.side.tabs);
 		G2L["2"]["BorderSizePixel"] = 0;
@@ -559,10 +562,12 @@ function UI:Window(winconfig)
 				if hidden then
 					animate(G2L["a"],ti,{Rotation=0})
 					G2L["b"].Visible = true
+					G2L["7"]["CornerRadius"] = UDim.new(0,0)
 					hidden = false
 				else
 					animate(G2L["a"],ti,{Rotation=-90})
 					G2L["b"].Visible = false
+					G2L["7"]["CornerRadius"] = UDim.new(0,7)
 					hidden = true
 				end
 			end)
