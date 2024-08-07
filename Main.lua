@@ -172,7 +172,7 @@ end
 
 -- // builds tab
 
-local b = builds:Section({Name = "Basic"})
+local b = builds:Section("Basic")
 local id = ""
 b:Input({
     Name = "Skybox id",
@@ -194,9 +194,10 @@ b:Button({
 -- // misc tab
 -- // grief tab
 
-local ggrief = grief:Section({Name = "Grief"})
+local ggrief = grief:Section("Grief")
 local size,decal = 6, ""
 
+ggrief:Label("Fire")
 ggrief:Input({
 	Name = "Size";
 	ClearOnFocus = false;
@@ -239,6 +240,7 @@ ggrief:Button({
 		server:InvokeServer("Remove",parts)
 	end
 })
+ggrief:Label("Troll")
 ggrief:Button({
 	Name = "Unanchor all";
 	Callback = function()
@@ -283,9 +285,9 @@ ggrief:Button({
 
 -- // maps tab
 
-local maps = Maps:Section({Name = "Maps"})
-local custommap = Maps:Section({Name = "Custom Map"})
-local savedmaps = Maps:Section({Name = "Saved Maps"})
+local maps = Maps:Section("Maps")
+local custommap = Maps:Section("Custom Map")
+local savedmaps = Maps:Section("Saved Maps")
 local function addsaved(name)
     savedmaps:Button({
         Name = name;
@@ -357,9 +359,10 @@ custommap:Button({
 
 -- // players tab
 
-local ats = players:Section({Name = "Player Controls"})
+local ats = players:Section("Player Controls")
 local target = ""
 
+ats:Label("Target")
 ats:Input({
     Name = "Target",
     ClearOnFocus = false,
@@ -372,7 +375,7 @@ ats:Input({
         end
     end
 })
-
+ats:Label("Kill")
 ats:Button({
     Name = "Kill",
     Callback = function()
@@ -392,7 +395,7 @@ ats:Toggle({
         end
     end
 })
-
+ats:Label("Tools")
 ats:Button({
     Name = "Remove tools",
     Callback = function()
