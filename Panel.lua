@@ -109,17 +109,17 @@ function UI:Window(winconfig)
 		G2L["10"]["Position"] = UDim2.new(0.5, 0,0, 7);
 		G2L["10"]["Name"] = "Search"
 
-		-- StarterGui.Panel.UI.pages.Builds.Frame.UICorner
+		-- StarterGui.Panel.UI.pages.Frame.UICorner
 		G2L["11"] = Instance.new("UICorner", G2L["10"]);
 		G2L["11"]["CornerRadius"] = UDim.new(0, 6);
 
-		-- StarterGui.Panel.UI.pages.Builds.Frame.UIStroke
+		-- StarterGui.Panel.UI.pages.Frame.UIStroke
 		G2L["12"] = Instance.new("UIStroke", G2L["10"]);
 		G2L["12"]["Color"] = Color3.fromRGB(37, 37, 37);
 		G2L["12"]["Thickness"] = 0.6000000238418579;
 		G2L["12"]["Transparency"] = 0.4399999976158142;
 
-		-- StarterGui.Panel.UI.pages.Builds.Frame.Box
+		-- StarterGui.Panel.UI.pages.Frame.Box
 		G2L["13"] = Instance.new("TextBox", G2L["10"]);
 		G2L["13"]["ZIndex"] = 2;
 		G2L["13"]["BorderSizePixel"] = 0;
@@ -165,6 +165,40 @@ function UI:Window(winconfig)
 	game:GetService("UserInputService").InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == winconfig.Key then
 			panel.Visible = not panel.Visible
+		end
+	end)
+
+	panel.pages.Search.Box.Changed:Connect(function(type)
+		if type == "Text" then
+			local searchText = panel.pages.Search.Box.Text
+			local selecttab
+
+			for _, tab in pairs(panel.pages:GetChildren()) do
+				if tab:IsA("Frame") and tab ~= panel.pages.Search then
+					if tab.Visible then
+						selecttab = tab
+						break
+					end
+				end
+			end
+
+			if selecttab then
+				for _, frame in pairs(selecttab.content:GetChildren()) do
+					if frame:IsA("Frame") and frame:FindFirstChild("items") then
+						for _, item in pairs(frame.items:GetChildren()) do
+							if item:IsA("GuiObject") and item:FindFirstChild("Header") then
+								print("5: Header found - " .. item.Header.Name)
+								local matchFound = searchText == "" or item.Name:lower():match(searchText:lower())
+								item.Visible = matchFound
+								frame.Visible = not matchFound
+								if searchText =="" then
+									frame.Visible = true
+								end
+							end
+						end
+					end
+				end
+			end
 		end
 	end)
 
@@ -303,12 +337,15 @@ function UI:Window(winconfig)
 	end)
 	local window = {}
 
+	local tabs,sections = 0,0
 	function window:AddTab(tabconfig)
 		local G2L, stab = {}, ""
+		tabs+=1
 		G2L["page"] = Instance.new("Frame", panel.pages);
 		G2L["page"]["BorderSizePixel"] = 0;
 		G2L["page"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
 		G2L["page"]["BackgroundTransparency"] = 1;
+		G2L["page"]["LayoutOrder"] = tabs
 		G2L["page"]["Size"] = UDim2.new(1, 0, 1, 0);
 		G2L["page"]["Visible"] = tabconfig.Selected;
 		G2L["page"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
@@ -328,9 +365,6 @@ function UI:Window(winconfig)
 		G2L["sframe"]["Position"] = UDim2.new(0, 0, 0, 44);
 		G2L["sframe"]["Name"] = [[content]];
 
-		G2L["ut"] = Instance.new("UIListLayout", G2L["sframe"])
-		G2L["ut"]["Padding"] = UDim.new(0,4)
-		G2L["ut"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center
 
 		G2L["2"] = Instance.new("Frame", panel.side.tabs);
 		G2L["2"]["BorderSizePixel"] = 0;
@@ -404,7 +438,7 @@ function UI:Window(winconfig)
 						animate(v.trigger,ti,{BackgroundColor3=Color3.fromRGB(13,13,13)})
 						animate(v.UIPadding,ti,{PaddingLeft=UDim.new(0,-29)})
 						animate(v.trigger.Icon,ti,{ImageColor3=Color3.fromRGB(227,227,227)})
-						animate(v.trigger.Header,ti,{TextColor3=Color3.fromRGB(227,227,227)})
+						animate(v.trigger.Header,ti,{TextColor3=Color3.fromRGB(151,151,151)})
 					else
 						panel.pages[v.Name].Visible = true
 						animate(v.trigger,ti,{BackgroundColor3=Color3.fromRGB(36,36,36)})
@@ -418,9 +452,9 @@ function UI:Window(winconfig)
 
 		local tab = {}
 
-		function tab:Section(sectconfig)
+		function tab:Section(name)
 			local G2L = {}
-
+			sections+=1
 			-- StarterGui.ScreenGui.content.Open Section
 			G2L["3"] = Instance.new("Frame", stab);
 			G2L["3"]["BorderSizePixel"] = 0;
@@ -428,9 +462,10 @@ function UI:Window(winconfig)
 			G2L["3"]["BackgroundTransparency"] = 1;
 			G2L["3"]["Position"] = UDim2.new(0,10,0,0)
 			G2L["3"]["Size"] = UDim2.new(1, -20, 0, 0);
+			G2L["3"]["LayoutOrder"] = sections
 			G2L["3"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 			G2L["3"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-			G2L["3"]["Name"] = sectconfig.Name;
+			G2L["3"]["Name"] = name;
 
 			-- StarterGui.ScreenGui.content.Open Section.top
 			G2L["4"] = Instance.new("Frame", G2L["3"]);
@@ -470,7 +505,7 @@ function UI:Window(winconfig)
 			G2L["8"]["TextColor3"] = Color3.fromRGB(228, 228, 228);
 			G2L["8"]["Size"] = UDim2.new(1, 0, 1, 0);
 			G2L["8"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-			G2L["8"]["Text"] = sectconfig.Name
+			G2L["8"]["Text"] = name
 			G2L["8"]["Name"] = [[Header]];
 			G2L["8"]["BackgroundTransparency"] = 1;
 
@@ -544,7 +579,7 @@ function UI:Window(winconfig)
 				G2L["e"]["AutoButtonColor"] = false;
 				G2L["e"]["BackgroundColor3"] = Color3.fromRGB(17, 17, 17);
 				G2L["e"]["Size"] = UDim2.new(1, -10, 0, 27);
-				G2L["e"]["Name"] = [[Button]];
+				G2L["e"]["Name"] = btnconfig.Name
 				G2L["e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 
 				-- StarterGui.ScreenGui.content.Open Section.items.Button.UICorner
@@ -590,7 +625,7 @@ function UI:Window(winconfig)
 				G2L["14"]["AutoButtonColor"] = false;
 				G2L["14"]["BackgroundColor3"] = Color3.fromRGB(17, 17, 17);
 				G2L["14"]["Size"] = UDim2.new(1, -10, 0, 27);
-				G2L["14"]["Name"] = [[Toggle]];
+				G2L["14"]["Name"] = togconfig.Name
 				G2L["14"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 
 				-- StarterGui.ScreenGui.content.Open Section.items.Toggle.UICorner
@@ -687,7 +722,7 @@ function UI:Window(winconfig)
 				G2L["1c"]["AutoButtonColor"] = false;
 				G2L["1c"]["BackgroundColor3"] = Color3.fromRGB(17, 17, 17);
 				G2L["1c"]["Size"] = UDim2.new(1, -10, 0, 27);
-				G2L["1c"]["Name"] = [[Input]];
+				G2L["1c"]["Name"] = inconfig.Name
 				G2L["1c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 
 				-- StarterGui.ScreenGui.content.Open Section.items.Input.UICorner
@@ -757,6 +792,26 @@ function UI:Window(winconfig)
 				G2L["23"].FocusLost:Connect(function()
 					inconfig.Callback(G2L["23"].Text)
 				end)
+			end
+			
+			function section:Label(text)
+				-- StarterGui.Panel.UI.side.Header
+				G2L["7"] = Instance.new("TextLabel", items);
+				G2L["7"]["BorderSizePixel"] = 0;
+				G2L["7"]["RichText"] = true;
+				G2L["7"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				G2L["7"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+				G2L["7"]["TextSize"] = 14;
+				G2L["7"]["TextColor3"] = Color3.fromRGB(228, 228, 228);
+				G2L["7"]["Size"] = UDim2.new(1, 0, 0, 23);
+				G2L["7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				G2L["7"]["Text"] = text
+				G2L["7"]["Name"] = [[Header]];
+				G2L["7"]["BackgroundTransparency"] = 1;
+
+				-- StarterGui.Panel.UI.side.Header.UIPadding
+				G2L["8"] = Instance.new("UIPadding", G2L["7"]);
+				G2L["8"]["PaddingLeft"] = UDim.new(0, 10);
 			end
 
 			return section
