@@ -254,7 +254,7 @@ ggrief:Button({
 		for i,v in pairs(game.Workspace:GetDescendants()) do
 			if not plrs:GetPlayerFromCharacter(v:FindFirstAncestorWhichIsA("Model")) then
 				if v:IsA("Part") or v:IsA("SpawnLocation") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") or v:IsA("Seat") or v:IsA("MeshPart") or v:IsA("VehicleSeat") then
-					parts[#parts+1] = {false,["Part"]=v}
+					parts[#parts+1] = {["Anchored"]=false,["Part"]=v}
 				end
 			end
 		end
