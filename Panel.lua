@@ -7,6 +7,9 @@ local function animate(o,i,props)
 	ts:Create(o,i,props):Play()
 end
 
+local uui
+local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, game:GetService("UserInputService"):GetPlatform())
+
 function UI:Window(winconfig)
 	local function initui()
 		local G2L = {};
@@ -160,13 +163,92 @@ function UI:Window(winconfig)
 		return G2L["1"];
 	end
 	local ui = initui()
-	local panel = ui.UI	
+	local panel = ui.UI
+	uui = ui	
 
 	game:GetService("UserInputService").InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == winconfig.Key then
 			panel.Visible = not panel.Visible
 		end
 	end)
+	
+	if IsOnMobile then
+		local MobileToggle = Instance.new("ScreenGui")
+		local Trigger = Instance.new("ImageButton")
+		local UICorner = Instance.new("UICorner")
+		local UIStroke = Instance.new("UIStroke")
+
+		-- Properties:
+
+		MobileToggle.Name = "MobileToggle"
+		MobileToggle.Parent = uui
+
+		Trigger.Name = "Trigger"
+		Trigger.Parent = MobileToggle
+		Trigger.AnchorPoint = Vector2.new(0.5, 0)
+		Trigger.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Trigger.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		Trigger.BorderSizePixel = 0
+		Trigger.Position = UDim2.new(0.5, 0, 0, 30)
+		Trigger.Size = UDim2.new(0, 50, 0, 50)
+		Trigger.Image = "rbxassetid://18753779817"
+		Trigger.MouseButton1Click:Connect(function()
+			uui.Enabled = not uui.Enabled
+		end)
+
+		UICorner.CornerRadius = UDim.new(0, 7)
+		UICorner.Parent = Trigger
+
+		UIStroke.Color = Color3.fromRGB(255, 170, 0)
+		UIStroke.Parent = Trigger
+
+		-- Scripts:
+
+		local function HHXRJI_fake_script() -- Trigger.Dragify 
+			local script = Instance.new('LocalScript', Trigger)
+
+			local UserInputService = game:GetService("UserInputService")
+
+			local gui = script.Parent
+
+			local dragging
+			local dragInput
+			local dragStart
+			local startPos
+
+			local function update(input)
+				local delta = input.Position - dragStart
+				gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+			end
+
+			gui.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					dragging = true
+					dragStart = input.Position
+					startPos = gui.Position
+
+					input.Changed:Connect(function()
+						if input.UserInputState == Enum.UserInputState.End then
+							dragging = false
+						end
+					end)
+				end
+			end)
+
+			gui.InputChanged:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+					dragInput = input
+				end
+			end)
+
+			UserInputService.InputChanged:Connect(function(input)
+				if input == dragInput and dragging then
+					update(input)
+				end
+			end)
+		end
+		coroutine.wrap(HHXRJI_fake_script)()
+	end
 
 	panel.pages.Search.Box.Changed:Connect(function(type)
 		if type == "Text" then
