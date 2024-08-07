@@ -6,9 +6,28 @@ local buildloader = {}
 
 function buildloader:LoadBuild(map, server)
 	local a = term:Window("Build Loader v1.3")
+	local recreatepart = Instance.new("BindableEvent",game)
 	local parts = {}
+	recreatepart.Event:Connect(function(part)
+		local part = map[part]
+		local partType = part.shape
+		if part.shape == "Block" then partType = "Normal" end
+		server:InvokeServer("CreatePart", partType, CFrame.new(unpack(part.cframe)), game.Workspace)
+	end)
 	local track = game.Workspace.ChildAdded:Connect(function(part)
-		parts[#parts+1] = part
+		parts[#parts+1] = {}
+		local partType = part.shape
+		if part.shape == "Block" then partType = "Normal" end
+		parts[#parts] = {
+			type = partType;
+			part = part
+		}
+	end)
+	local ack = game.Workspace.ChildRemoved:Connect(function(part)
+		if parts[part] then
+			recreatepart:Fire(parts[part])
+			table.remove(parts,parts[part])
+		end
 	end)
 	local ci = 0
 	local total = 0
@@ -35,26 +54,47 @@ function buildloader:LoadBuild(map, server)
 	end
 
 	local time = tick()
+	local af = {}
 	local s,x = pcall(function()
 		local function mapper()
 			for i, part in pairs(map) do
-				if i > ci then
-					ci += 1
-					local partType = part.shape
-					if part.shape == "Block" then partType = "Normal" end
-					server:InvokeServer("CreatePart", partType, CFrame.new(unpack(part.cframe)), game.Workspace)
-					progress = ci
-					local percentage = math.floor((progress / total) * 100)
-					progresstext:Edit({
-						Color = progresstext:GetColor();
-						Content = "Progress: "..percentage.."%\n"..getvisualbar(progress, total, 20);
-					})
-					rs.Heartbeat:Wait()
+				local partType = part.shape
+				if part.shape == "Block" then partType = "Normal" end
+				if not a[partType] then
+					server:InvokeServer("CreatePart", partType, CFrame.new(0,-800,0), game.Workspace)
+					af[#a+1] = partType	
 				end
+				break
 			end
 		end
 		mapper()
+		task.wait()
+		local asd = {}
+		for i,v in pairs(map) do 
+			local part = parts[#parts]
+			local partType = part.part.shape
+			if part.part.shape == "Block" then partType = "Normal" end
+			for a,c in pairs(parts) do
+				if c.type == partType then
+					asd[#asd+1] = c.part
+				end
+			end
+			ci += 1
+			progress = ci
+			local percentage = math.floor((progress / total) * 100)
+			progresstext:Edit({
+				Color = progresstext:GetColor();
+				Content = "Progress: "..percentage.."%\n"..getvisualbar(progress, total, 20);
+			})
+		end
+		server:InvokeServer("Clone",asd,game.Workspace)
+		task.wait(2)
 	end)
+	local n = {}
+	for i,v in pairs(parts) do
+		n[i] = v.part
+	end
+	parts = n
 	track:Disconnect()
 	if not s then
 		a:Log({
@@ -67,7 +107,7 @@ function buildloader:LoadBuild(map, server)
 			Color = Color3.fromRGB(255,255,255);
 			Content = "Done Mapping!";
 		})
-		server:InvokeServer("CreateGroup", "Model", game.Workspace, parts)
+		--server:InvokeServer("CreateGroup", "Model", game.Workspace, n)
 		a:Log({
 			Color = Color3.fromRGB(255,255,255);
 			Content = "Setting Properties...";
