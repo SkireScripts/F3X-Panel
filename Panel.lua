@@ -10,6 +10,7 @@ end
 local uui
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, game:GetService("UserInputService"):GetPlatform())
 
+
 function UI:Window(winconfig)
 	local function initui()
 		local G2L = {};
