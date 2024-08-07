@@ -456,6 +456,7 @@ function UI:Window(winconfig)
 		G2L["2"]["BorderSizePixel"] = 0;
 		G2L["2"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
 		G2L["2"]["BackgroundTransparency"] = 1;
+		G2L["2"]["LayoutOrder"] = tabs;
 		G2L["2"]["Size"] = UDim2.new(1, 0, 0, 24);
 		G2L["2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 		G2L["2"]["Name"] = tabconfig.Name;
@@ -523,7 +524,7 @@ function UI:Window(winconfig)
 						panel.pages[v.Name].Visible = false
 						animate(v.trigger,ti,{BackgroundColor3=Color3.fromRGB(13,13,13)})
 						animate(v.UIPadding,ti,{PaddingLeft=UDim.new(0,-29)})
-						animate(v.trigger.Icon,ti,{ImageColor3=Color3.fromRGB(227,227,227)})
+						animate(v.trigger.Icon,ti,{ImageColor3=Color3.fromRGB(151,151,151)})
 						animate(v.trigger.Header,ti,{TextColor3=Color3.fromRGB(151,151,151)})
 					else
 						panel.pages[v.Name].Visible = true
@@ -537,7 +538,7 @@ function UI:Window(winconfig)
 		end)
 
 		local tab = {}
-
+			
 		function tab:Section(name)
 			local G2L = {}
 			sections+=1
