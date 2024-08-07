@@ -87,8 +87,8 @@ function UI:Window(winconfig)
 
 		-- StarterGui.Panel.UI.side.tabs.UIListLayout
 		G2L["ut"] = Instance.new("UIListLayout", G2L["ts"])
-		G2L["ut"]["Padding"] = UDim.new(0,2)
-
+	    G2L["ut"]["Padding"] = UDim.new(0,2);
+		G2L["ut"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
 		-- StarterGui.Panel.UI.side.tabs.UIPadding
 		G2L["up"] = Instance.new("UIPadding", G2L["ts"])
 		G2L["up"]["PaddingTop"] = UDim.new(0,26)
@@ -451,6 +451,7 @@ function UI:Window(winconfig)
 		G2L["dsfd"] = Instance.new("UIListLayout", G2L["sframe"])
 		G2L["dsfd"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center
 		G2L["dsfd"]["Padding"] = UDim.new(0,5)
+        G2L["dsfd"]["SortOrder"] = Enum.SortOrder.LayoutOrder
 
 		G2L["2"] = Instance.new("Frame", panel.side.tabs);
 		G2L["2"]["BorderSizePixel"] = 0;
