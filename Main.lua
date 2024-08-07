@@ -36,6 +36,12 @@ local players = panel:AddTab({
     Icon = "7072724538",
     Selected = false
 })
+local credits = panel:AddTab({
+	Name = "Credits",
+	Icon = "7072724538",
+	Selected = false
+})
+
 
 -- // idk
 
@@ -415,3 +421,9 @@ ats:Toggle({
         end
     end
 })
+
+-- // credits tab
+
+local credits = credits:Section("Credits")
+credits:Label("Skire - Main dev")
+credits:Label("logs - idea guy")
