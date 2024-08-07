@@ -1,429 +1,914 @@
-local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/Panel.lua"))()
-local plrs = game:GetService("Players")
-local rs = game:GetService("RunService")
-local char = plrs.LocalPlayer.Character or plrs.LocalPlayer.CharacterAdded:Wait()
-local server = nil
+local ts = game:GetService("TweenService")
+local ti = TweenInfo.new(0.1,Enum.EasingStyle.Linear)
 
-getgenv().settings = {
-    ["loop kill"] = false;
-    ["loop tools"] = false;
-    ["burn"] = false;
-}
+local UI = {}
 
-local panel = ui:Window({
-    Name = "F3X Panel",
-    Title = "<font color=\"#ffb31a\">F3X</font> Panel",
-    Hidden = false,
-    Key = Enum.KeyCode.Insert
-})
-local builds = panel:AddTab({
-    Name = "Builds",
-    Icon = "7072706318",
-    Selected = true
-})
-local grief = panel:AddTab({
-	Name = "Grief",
-	Icon = "7072723685",
-	Selected = false
-})
-local Maps = panel:AddTab({
-    Name = "Maps",
-    Icon = "7072718631",
-    Selected = false
-})
-local players = panel:AddTab({
-    Name = "Players",
-    Icon = "7072724538",
-    Selected = false
-})
-local credits = panel:AddTab({
-	Name = "Credits",
-	Icon = "7072724538",
-	Selected = false
-})
-
-
--- // idk
-
-local function getserver()
-    pcall(function()
-        if char then
-            for _, v in pairs(char:GetDescendants()) do
-                if v.Name == "SyncAPI" then
-                    server = v:FindFirstChildWhichIsA("RemoteFunction")
-                end
-            end
-            if not server then
-                for _, v in pairs(plrs.LocalPlayer.Backpack:GetDescendants()) do
-                    if v.Name == "SyncAPI" then
-                        server = v:FindFirstChildWhichIsA("RemoteFunction")
-                    end
-                end
-            end
-        end
-    end)
+local function animate(o,i,props)
+	ts:Create(o,i,props):Play()
 end
 
-rs.Stepped:Connect(function()
-    getserver()
-end)
+local uui
+local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, game:GetService("UserInputService"):GetPlatform())
 
-plrs.LocalPlayer.CharacterAdded:Connect(function(a)
-    server = nil
-end)
+function UI:Window(winconfig)
+	local function initui()
+		local G2L = {};
 
--- // functions
+		-- StarterGui.Panel
+		G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"));
+		G2L["1"]["ResetOnSpawn"] = false;
+		G2L["1"]["Name"] = winconfig.Name;
 
-local function getplayer(str)
-    for _, v in pairs(plrs:GetPlayers()) do
-        if v.Name:lower():match(str:lower()) then
-            return v
-        end
-        if v.DisplayName:lower():match(str:lower()) then
-            return v
-        end
-    end
-    return nil
-end
+		-- StarterGui.Panel.UI
+		G2L["2"] = Instance.new("Frame", G2L["1"]);
+		G2L["2"]["BorderSizePixel"] = 0;
+		G2L["2"]["BackgroundColor3"] = Color3.fromRGB(11, 11, 11);
+		G2L["2"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+		G2L["2"]["Size"] = UDim2.new(0, 379, 0, 267);
+		G2L["2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["2"]["Visible"] = not winconfig.Hidden;
+		G2L["2"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+		G2L["2"]["Name"] = [[UI]];
 
+		-- StarterGui.Panel.UI.UICorner
+		G2L["3"] = Instance.new("UICorner", G2L["2"]);
+		G2L["3"]["CornerRadius"] = UDim.new(0, 10);
 
-local function killplayer(target)
-	if target and server then
-		if typeof(target) ~= "string" then
-			pcall(function()
-				server:InvokeServer("Remove", {target.Character.Head})
+		-- StarterGui.Panel.UI.side
+		G2L["4"] = Instance.new("Frame", G2L["2"]);
+		G2L["4"]["BorderSizePixel"] = 0;
+		G2L["4"]["BackgroundColor3"] = Color3.fromRGB(14, 14, 14);
+		G2L["4"]["Size"] = UDim2.new(0, 112, 1, 0);
+		G2L["4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["4"]["Name"] = [[side]];
+
+		-- StarterGui.Panel.UI.side.UICorner
+		G2L["5"] = Instance.new("UICorner", G2L["4"]);
+		G2L["5"]["CornerRadius"] = UDim.new(0, 10);
+
+		-- StarterGui.Panel.UI.side.cover
+		G2L["6"] = Instance.new("Frame", G2L["4"]);
+		G2L["6"]["BorderSizePixel"] = 0;
+		G2L["6"]["BackgroundColor3"] = Color3.fromRGB(14, 14, 14);
+		G2L["6"]["Size"] = UDim2.new(0, 5, 1, 0);
+		G2L["6"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["6"]["Position"] = UDim2.new(1, -5, 0, 0);
+		G2L["6"]["Name"] = [[cover]];
+
+		-- StarterGui.Panel.UI.side.Header
+		G2L["7"] = Instance.new("TextLabel", G2L["4"]);
+		G2L["7"]["BorderSizePixel"] = 0;
+		G2L["7"]["RichText"] = true;
+		G2L["7"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		G2L["7"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+		G2L["7"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+		G2L["7"]["TextSize"] = 14;
+		G2L["7"]["TextColor3"] = Color3.fromRGB(228, 228, 228);
+		G2L["7"]["Size"] = UDim2.new(1, 0, 0, 26);
+		G2L["7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["7"]["Text"] = winconfig.Title
+		G2L["7"]["Name"] = [[Header]];
+		G2L["7"]["BackgroundTransparency"] = 1;
+
+		-- StarterGui.Panel.UI.side.Header.UIPadding
+		G2L["8"] = Instance.new("UIPadding", G2L["7"]);
+		G2L["8"]["PaddingLeft"] = UDim.new(0, 10);
+
+		-- StarterGui.Panel.UI.side.tabs
+		G2L["ts"] = Instance.new("ScrollingFrame", G2L["4"])
+		G2L["ts"]["Size"] = UDim2.new(1,0,1,0)
+		G2L["ts"]["Name"] = "tabs"
+		G2L["ts"]["AutomaticSize"] = Enum.AutomaticSize.Y
+		G2L["ts"]["CanvasSize"] = UDim2.new(0,0,0,0)
+		G2L["ts"]["ScrollBarImageTransparency"] = 1
+		G2L["ts"]["ScrollingDirection"] = Enum.ScrollingDirection.Y
+		G2L["ts"]["BackgroundTransparency"] = 1
+
+		-- StarterGui.Panel.UI.side.tabs.UIListLayout
+		G2L["ut"] = Instance.new("UIListLayout", G2L["ts"])
+		G2L["ut"]["Padding"] = UDim.new(0,2)
+
+		-- StarterGui.Panel.UI.side.tabs.UIPadding
+		G2L["up"] = Instance.new("UIPadding", G2L["ts"])
+		G2L["up"]["PaddingTop"] = UDim.new(0,26)
+
+		-- StarterGui.Panel.UI.pages
+		G2L["e"] = Instance.new("Frame", G2L["2"]);
+		G2L["e"]["BorderSizePixel"] = 0;
+		G2L["e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		G2L["e"]["BackgroundTransparency"] = 1;
+		G2L["e"]["Size"] = UDim2.new(1, -112, 1, 0);
+		G2L["e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["e"]["Position"] = UDim2.new(0, 112, 0, 0);
+		G2L["e"]["Name"] = [[pages]];
+
+		-- StarterGui.Panel.UI.pages.Frame
+		G2L["10"] = Instance.new("Frame", G2L["e"]);
+		G2L["10"]["BorderSizePixel"] = 0;
+		G2L["10"]["BackgroundColor3"] = Color3.fromRGB(14, 14, 14);
+		G2L["10"]["AnchorPoint"] = Vector2.new(0.5,0)
+		G2L["10"]["Size"] = UDim2.new(1, -18,0, 30);
+		G2L["10"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["10"]["Position"] = UDim2.new(0.5, 0,0, 7);
+		G2L["10"]["Name"] = "Search"
+
+		-- StarterGui.Panel.UI.pages.Frame.UICorner
+		G2L["11"] = Instance.new("UICorner", G2L["10"]);
+		G2L["11"]["CornerRadius"] = UDim.new(0, 6);
+
+		-- StarterGui.Panel.UI.pages.Frame.UIStroke
+		G2L["12"] = Instance.new("UIStroke", G2L["10"]);
+		G2L["12"]["Color"] = Color3.fromRGB(37, 37, 37);
+		G2L["12"]["Thickness"] = 0.6000000238418579;
+		G2L["12"]["Transparency"] = 0.4399999976158142;
+
+		-- StarterGui.Panel.UI.pages.Frame.Box
+		G2L["13"] = Instance.new("TextBox", G2L["10"]);
+		G2L["13"]["ZIndex"] = 2;
+		G2L["13"]["BorderSizePixel"] = 0;
+		G2L["13"]["TextSize"] = 14;
+		G2L["13"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+		G2L["13"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		G2L["13"]["TextColor3"] = Color3.fromRGB(191, 191, 191);
+		G2L["13"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+		G2L["13"]["BackgroundTransparency"] = 1;
+		G2L["13"]["PlaceholderText"] = [[Search]];
+		G2L["13"]["Size"] = UDim2.new(1, -23, 1, 0);
+		G2L["13"]["ClipsDescendants"] = true;
+		G2L["13"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["13"]["Text"] = [[]];
+		G2L["13"]["Position"] = UDim2.new(0, 23, 0, 0);
+		G2L["13"]["Name"] = [[Box]];
+		G2L["13"]["ClearTextOnFocus"] = false;
+
+		-- StarterGui.Panel.UI.pages.Builds.Frame.Icon
+		G2L["14"] = Instance.new("ImageLabel", G2L["10"]);
+		G2L["14"]["BorderSizePixel"] = 0;
+		G2L["14"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		G2L["14"]["ImageColor3"] = Color3.fromRGB(228, 228, 228);
+		G2L["14"]["AnchorPoint"] = Vector2.new(0, 0.5);
+		G2L["14"]["Image"] = [[rbxassetid://7072721559]];
+		G2L["14"]["Size"] = UDim2.new(0, 15, 0, 15);
+		G2L["14"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["14"]["Name"] = [[Icon]];
+		G2L["14"]["BackgroundTransparency"] = 1;
+		G2L["14"]["Position"] = UDim2.new(0, 5, 0.5, 0);
+
+		-- StarterGui.Panel.UI.UIStroke
+		G2L["16"] = Instance.new("UIStroke", G2L["2"]);
+		G2L["16"]["Color"] = Color3.fromRGB(37, 37, 37);
+		G2L["16"]["Thickness"] = 0.6;
+		G2L["16"]["Transparency"] = 0.4;
+
+		return G2L["1"];
+	end
+	local ui = initui()
+	local panel = ui.UI
+	uui = ui	
+
+	game:GetService("UserInputService").InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == winconfig.Key then
+			panel.Visible = not panel.Visible
+		end
+	end)
+	
+	if IsOnMobile then
+		local MobileToggle = Instance.new("ScreenGui")
+		local Trigger = Instance.new("ImageButton")
+		local UICorner = Instance.new("UICorner")
+		local UIStroke = Instance.new("UIStroke")
+
+		-- Properties:
+
+		MobileToggle.Name = "MobileToggle"
+		MobileToggle.Parent = uui
+
+		Trigger.Name = "Trigger"
+		Trigger.Parent = MobileToggle
+		Trigger.AnchorPoint = Vector2.new(0.5, 0)
+		Trigger.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Trigger.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		Trigger.BorderSizePixel = 0
+		Trigger.Position = UDim2.new(0.5, 0, 0, 30)
+		Trigger.Size = UDim2.new(0, 50, 0, 50)
+		Trigger.Image = "rbxassetid://18753779817"
+		Trigger.MouseButton1Click:Connect(function()
+			uui.Enabled = not uui.Enabled
+		end)
+
+		UICorner.CornerRadius = UDim.new(0, 7)
+		UICorner.Parent = Trigger
+
+		UIStroke.Color = Color3.fromRGB(255, 170, 0)
+		UIStroke.Parent = Trigger
+
+		-- Scripts:
+
+		local function HHXRJI_fake_script() -- Trigger.Dragify 
+			local script = Instance.new('LocalScript', Trigger)
+
+			local UserInputService = game:GetService("UserInputService")
+
+			local gui = script.Parent
+
+			local dragging
+			local dragInput
+			local dragStart
+			local startPos
+
+			local function update(input)
+				local delta = input.Position - dragStart
+				gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+			end
+
+			gui.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					dragging = true
+					dragStart = input.Position
+					startPos = gui.Position
+
+					input.Changed:Connect(function()
+						if input.UserInputState == Enum.UserInputState.End then
+							dragging = false
+						end
+					end)
+				end
 			end)
-		elseif target == "others" then
-			local heads = {}
-			for _, plr in pairs(plrs:GetPlayers()) do
-				if plr ~= plrs.LocalPlayer then
-					heads[#heads+1] = plr.Character.Head
+
+			gui.InputChanged:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+					dragInput = input
+				end
+			end)
+
+			UserInputService.InputChanged:Connect(function(input)
+				if input == dragInput and dragging then
+					update(input)
+				end
+			end)
+		end
+		coroutine.wrap(HHXRJI_fake_script)()
+	end
+
+	panel.pages.Search.Box.Changed:Connect(function(type)
+		if type == "Text" then
+			local searchText = panel.pages.Search.Box.Text
+			local selecttab
+
+			for _, tab in pairs(panel.pages:GetChildren()) do
+				if tab:IsA("Frame") and tab ~= panel.pages.Search then
+					if tab.Visible then
+						selecttab = tab
+						break
+					end
 				end
 			end
-			pcall(function()
-				server:InvokeServer("Remove", heads)
-			end)
-		elseif target == "all" then
-			local heads = {}
-			for _, plr in pairs(plrs:GetPlayers()) do
-				heads[#heads+1] = plr.Character.Head
-			end
-			pcall(function()
-				server:InvokeServer("Remove", heads)
-			end)
-		end
-	end
-end
 
-local function removetools(target)
-	if target and server then
-		if typeof(target) ~= "string" then
-			local tools = {}
-			for _,tool in pairs(target.Character:GetChildren()) do
-				if tool:IsA("Tool") then
-					tools[#tools+1] = tool
-				end
-			end
-			for _,tool in pairs(target.Backpack:GetChildren()) do
-				if tool:IsA("Tool") then
-					tools[#tools+1] = tool
-				end
-			end
-			pcall(function()
-				server:InvokeServer("Remove", tools)
-			end)
-		elseif target == "others" then
-			local tools = {}
-			for i,v in pairs(plrs:GetPlayers()) do
-                if v~=plrs.LocalPlayer then
-                    for _,tool in pairs(v.Character:GetChildren()) do
-                        if tool:IsA("Tool") then
-                            tools[#tools+1] = tool
-                        end
-                    end
-                    for _,tool in pairs(v.Backpack:GetChildren()) do
-                        if tool:IsA("Tool") then
-                            tools[#tools+1] = tool
-                        end
-                    end
-                end
-            end
-			pcall(function()
-				server:InvokeServer("Remove", tools)
-			end)
-		elseif target == "all" then
-			local tools = {}
-			for i,v in pairs(plrs:GetPlayers()) do
-                for _,tool in pairs(v.Character:GetChildren()) do
-                    if tool:IsA("Tool") then
-                        tools[#tools+1] = tool
-                    end
-                end
-                for _,tool in pairs(v.Backpack:GetChildren()) do
-                    if tool:IsA("Tool") then
-                        tools[#tools+1] = tool
-                    end
-                end
-            end
-			pcall(function()
-				server:InvokeServer("Remove", tools)
-			end)
-		end
-	end
-end
-
-local function loadbuild(map)
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/buildloader.lua"))():LoadBuild(map, server)
-end
-
--- // builds tab
-
-local b = builds:Section("Basic")
-local id = ""
-b:Input({
-    Name = "Skybox id",
-    ClearOnFocus = false,
-    PlaceHolder = "rbxassetid",
-    Text = "",
-    Callback = function(t)
-        id = t
-    end
-})
-
-b:Button({
-    Name = "SkyBox";
-    Callback = function()
-        loadbuild(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/skybox"))():load(id))
-    end
-})
-
--- // misc tab
--- // grief tab
-
-local ggrief = grief:Section("Grief")
-local size,decal = 6, ""
-
-ggrief:Label("Fire")
-ggrief:Input({
-	Name = "Size";
-	ClearOnFocus = false;
-	Text = "6";
-	PlaceHolder = 'Fire Size';
-	Callback = function(a)
-		size = tonumber(a)
-	end
-})
-ggrief:Toggle({
-	Name = "Burn all";
-	Enabled = false;
-	Callback = function(bool)
-		getgenv().settings.burn = bool
-		while getgenv().settings.burn do wait()
-			local parts = {}
-			for i,v in pairs(game.Workspace:GetDescendants()) do
-				if v:IsA("Part") or v:IsA("SpawnLocation") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") or v:IsA("Seat") or v:IsA("MeshPart") or v:IsA("VehicleSeat") then
-					parts[#parts+1] = {
-						["DecorationType"] = "Fire";
-						["Part"] = v;
-						["Size"] = size;
-					}	
-				end
-			end
-			server:InvokeServer("CreateDecorations",parts)
-			parts={}
-		end
-	end
-})
-ggrief:Button({
-	Name = "Remove Fire";
-	Callback = function()
-		local parts = {}
-		for i,v in pairs(game.Workspace:GetDescendants()) do
-			if v:IsA("Fire") then
-				parts[#parts+1] = v
-			end
-		end
-		server:InvokeServer("Remove",parts)
-	end
-})
-ggrief:Label("Troll")
-ggrief:Button({
-	Name = "Unanchor all";
-	Callback = function()
-		local parts = {}
-		for i,v in pairs(game.Workspace:GetDescendants()) do
-			if not plrs:GetPlayerFromCharacter(v:FindFirstAncestorWhichIsA("Model")) then
-				if v:IsA("Part") or v:IsA("SpawnLocation") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") or v:IsA("Seat") or v:IsA("MeshPart") or v:IsA("VehicleSeat") then
-					parts[#parts+1] = {["Anchored"]=false,["Part"]=v}
+			if selecttab then
+				for _, frame in pairs(selecttab.content:GetChildren()) do
+					if frame:IsA("Frame") and frame:FindFirstChild("items") then
+						for _, item in pairs(frame.items:GetChildren()) do
+							if item:IsA("GuiObject") and item:FindFirstChild("Header") then
+								print("5: Header found - " .. item.Header.Name)
+								local matchFound = searchText == "" or item.Name:lower():match(searchText:lower())
+								item.Visible = matchFound
+								frame.Visible = not matchFound
+								if searchText =="" then
+									frame.Visible = true
+								end
+							end
+						end
+					end
 				end
 			end
 		end
-		server:InvokeServer("SyncAnchor",parts)
-	end
-})
-ggrief:Input({
-	Name = "Decal ID";
-	ClearOnFocus = false;
-	Text = "";
-	PlaceHolder = "Decal";
-	Callback = function(a)
-		decal = "rbxassetid://"..a
-	end
-})
-ggrief:Button({
-	Name = "decal all (top)",
-	Callback = function()
-		local parts = {}
-		for _, v in pairs(game.Workspace:GetDescendants()) do
-			if v:IsA("Part") or v:IsA("SpawnLocation") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") or v:IsA("Seat") or v:IsA("MeshPart") or v:IsA("VehicleSeat") then
-				parts[#parts+1] = {
-					Part = v;
-					Face = Enum.NormalId.Top;
-					TextureType = "Decal";
-					Texture = decal;
-				}
+	end)
+
+
+	pcall(function() -- ui stuff
+		local function handler()
+			local module = {}
+
+			local mouse = game.Players.LocalPlayer:GetMouse()
+
+			local DRAGGER_SIZE = 30
+			local DRAGGER_TRANSPARENCY = .5
+
+			local dragging = false
+
+			function module.makeResizable(obj:GuiObject, minSize)
+
+				local resizer = Instance.new("Frame")
+				local dragger = Instance.new("ImageButton")
+				local UICorner = Instance.new("UICorner")
+
+				resizer.Name = "resizer"
+				resizer.Parent = panel
+				resizer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				resizer.BackgroundTransparency = 1
+				resizer.BorderColor3 = Color3.fromRGB(27, 42, 53)
+				resizer.ClipsDescendants = true
+				resizer.Position = UDim2.new(1, -DRAGGER_SIZE, 1, -DRAGGER_SIZE)
+				resizer.Size = UDim2.fromOffset(DRAGGER_SIZE, DRAGGER_SIZE)
+				resizer.SizeConstraint = Enum.SizeConstraint.RelativeXX
+
+				dragger.Name = "dragger"
+				dragger.Parent = resizer
+				dragger.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+				dragger.BorderColor3 = Color3.fromRGB(27, 42, 53)
+				dragger.BorderSizePixel = 0
+				dragger.BackgroundTransparency = 1
+				dragger.Size = UDim2.new(2, 0, 2, 0)
+				dragger.ZIndex = 2
+				dragger.ImageTransparency = 1
+
+				UICorner.CornerRadius = UDim.new(0.5, 0)
+				UICorner.Parent = dragger
+
+				local duic = dragger.UICorner
+				minSize = minSize or Vector2.new(160, 90)
+
+				local startDrag, startSize
+				local gui = ui
+				resizer.Parent = obj
+
+				local function finishResize(tr)
+					dragger.Position = UDim2.new(0,0,0,0)
+					dragger.Size = UDim2.new(2,0,2,0)
+					dragger.Parent = resizer
+					dragger.BackgroundTransparency = tr
+					duic.Parent = dragger
+					startDrag = nil
+				end
+				dragger.MouseButton1Down:Connect(function()
+					if not startDrag then
+						startSize = obj.AbsoluteSize			
+						startDrag = Vector2.new(mouse.X, mouse.Y)
+						dragger.BackgroundTransparency = 1
+						dragger.Size = UDim2.fromOffset(gui.AbsoluteSize.X, gui.AbsoluteSize.Y)
+						dragger.Position = UDim2.new(0,0,0,0)
+						duic.Parent = nil
+						dragger.Parent = gui
+					end
+				end)	
+				dragger.MouseMoved:Connect(function()
+					if startDrag then		
+						local m = Vector2.new(mouse.X, mouse.Y)
+						local mouseMoved = Vector2.new(m.X - startDrag.X, m.Y - startDrag.Y)
+
+						local s = startSize + mouseMoved
+						local sx = math.max(minSize.X, s.X) 
+						local sy = math.max(minSize.Y, s.Y)
+
+						obj.Size = UDim2.fromOffset(sx, sy)
+
+					end
+				end)
+				dragger.MouseEnter:Connect(function()
+					finishResize(DRAGGER_TRANSPARENCY)				
+				end)
+				dragger.MouseLeave:Connect(function()
+					finishResize(1)
+				end)		
+				dragger.MouseButton1Up:Connect(function()
+					finishResize(DRAGGER_TRANSPARENCY)
+				end)	
 			end
+
+			function module.makeDraggable(obj)
+				local UIS = game:GetService("UserInputService")
+				local dragInput, dragStart
+				local startPos = obj.Position 
+				local dragger = obj	
+				local function updateInput(input)
+					local offset = input.Position - dragStart
+					local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + offset.X, startPos.Y.Scale, startPos.Y.Offset + offset.Y)
+					game:GetService("TweenService"):Create(obj, TweenInfo.new(0.25), {Position = Position}):Play()
+				end
+				dragger.InputBegan:Connect(function(input)
+					if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not UIS:GetFocusedTextBox() then
+						dragging = true
+						dragStart = input.Position
+						startPos = obj.Position
+						module.dragged = obj
+						input.Changed:Connect(function()
+							if input.UserInputState == Enum.UserInputState.End then
+								dragging = false
+							end
+						end)
+					end
+				end)
+				dragger.InputChanged:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+						dragInput = input
+					end
+				end)
+				UIS.InputChanged:Connect(function(input)
+					if input == dragInput and dragging then
+						updateInput(input)
+					end
+				end)
+			end
+
+			return module
 		end
-		server:InvokeServer("CreateTextures", parts)
-		server:InvokeServer("SyncTexture", parts)
+		local resizer = handler()
+		panel.Position = UDim2.new(0,panel.AbsolutePosition.X,0,panel.AbsolutePosition.Y);panel.AnchorPoint = Vector2.new(0,0)
+		resizer.makeResizable(panel, Vector2.new(379, 267))
+		resizer.makeDraggable(panel)
+	end)
+	local window = {}
+
+	local tabs,sections = 0,0
+	function window:AddTab(tabconfig)
+		local G2L, stab = {}, ""
+		tabs+=1
+		G2L["page"] = Instance.new("Frame", panel.pages);
+		G2L["page"]["BorderSizePixel"] = 0;
+		G2L["page"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		G2L["page"]["BackgroundTransparency"] = 1;
+		G2L["page"]["LayoutOrder"] = tabs
+		G2L["page"]["Size"] = UDim2.new(1, 0, 1, 0);
+		G2L["page"]["Visible"] = tabconfig.Selected;
+		G2L["page"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["page"]["Name"] = tabconfig.Name;
+
+		G2L["sframe"] = Instance.new("ScrollingFrame", G2L["page"]);
+		G2L["sframe"]["Active"] = true;
+		G2L["sframe"]["BorderSizePixel"] = 0;
+		G2L["sframe"]["CanvasSize"] = UDim2.new(0, 0, 0, 0);
+		G2L["sframe"]["ScrollBarImageTransparency"] = 1;
+		G2L["sframe"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		G2L["sframe"]["AutomaticCanvasSize"] = Enum.AutomaticSize.Y;
+		G2L["sframe"]["BackgroundTransparency"] = 1;
+		G2L["sframe"]["Size"] = UDim2.new(1, 0, 1, -44);
+		G2L["sframe"]["ScrollBarImageColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["sframe"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["sframe"]["Position"] = UDim2.new(0, 0, 0, 44);
+		G2L["sframe"]["Name"] = [[content]];
+
+		G2L["dsfd"] = Instance.new("UIListLayout", G2L["sframe"])
+		G2L["dsfd"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center
+		G2L["dsfd"]["Padding"] = UDim.new(0,5)
+
+		G2L["2"] = Instance.new("Frame", panel.side.tabs);
+		G2L["2"]["BorderSizePixel"] = 0;
+		G2L["2"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		G2L["2"]["BackgroundTransparency"] = 1;
+		G2L["2"]["Size"] = UDim2.new(1, 0, 0, 24);
+		G2L["2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["2"]["Name"] = tabconfig.Name;
+
+		-- StarterGui.ScreenGui.Players.UIPadding
+		G2L["3"] = Instance.new("UIPadding", G2L["2"]);
+		G2L["3"]["PaddingLeft"] = UDim.new(0, -29);
+
+		-- StarterGui.ScreenGui.Players.trigger
+		G2L["4"] = Instance.new("ImageButton", G2L["2"]);
+		G2L["4"]["BorderSizePixel"] = 0;
+		G2L["4"]["AutoButtonColor"] = false;
+		G2L["4"]["BackgroundColor3"] = Color3.fromRGB(13, 13, 13);
+		G2L["4"]["Size"] = UDim2.new(0, 116, 0, 24);
+		G2L["4"]["Name"] = [[trigger]];
+		G2L["4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+
+		-- StarterGui.ScreenGui.Players.trigger.UICorner
+		G2L["5"] = Instance.new("UICorner", G2L["4"]);
+		G2L["5"]["CornerRadius"] = UDim.new(1, 0);
+
+		-- StarterGui.ScreenGui.Players.trigger.Header
+		G2L["6"] = Instance.new("TextLabel", G2L["4"]);
+		G2L["6"]["BorderSizePixel"] = 0;
+		G2L["6"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		G2L["6"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+		G2L["6"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+		G2L["6"]["TextSize"] = 14;
+		G2L["6"]["TextColor3"] = Color3.fromRGB(151, 151, 151);
+		G2L["6"]["Size"] = UDim2.new(1, 0, 1, 0);
+		G2L["6"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["6"]["Text"] = tabconfig.Name;
+		G2L["6"]["Name"] = [[Header]];
+		G2L["6"]["BackgroundTransparency"] = 1;
+
+		-- StarterGui.ScreenGui.Players.trigger.Header.UIPadding
+		G2L["7"] = Instance.new("UIPadding", G2L["6"]);
+		G2L["7"]["PaddingLeft"] = UDim.new(0, 40);
+
+		-- StarterGui.ScreenGui.Players.trigger.Icon
+		G2L["8"] = Instance.new("ImageLabel", G2L["4"]);
+		G2L["8"]["BorderSizePixel"] = 0;
+		G2L["8"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		G2L["8"]["ImageColor3"] = Color3.fromRGB(151, 151, 151);
+		G2L["8"]["AnchorPoint"] = Vector2.new(0, 0.5);
+		G2L["8"]["Image"] = [[rbxassetid://]]..tabconfig.Icon;
+		G2L["8"]["Size"] = UDim2.new(0, 15, 0, 15);
+		G2L["8"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		G2L["8"]["Name"] = [[Icon]];
+		G2L["8"]["BackgroundTransparency"] = 1;
+		G2L["8"]["Position"] = UDim2.new(1, -25, 0.5, 0);
+
+		stab = G2L["sframe"]
+		if tabconfig.Selected then
+			animate(G2L["2"].trigger,ti,{BackgroundColor3=Color3.fromRGB(36,36,36)})
+			animate(G2L["2"].UIPadding,ti,{PaddingLeft=UDim.new(0,-15)})
+			animate(G2L["2"].trigger.Icon,ti,{ImageColor3=Color3.fromRGB(227,227,227)})
+			animate(G2L["2"].trigger.Header,ti,{TextColor3=Color3.fromRGB(227,227,227)})
+		end
+
+		G2L["4"].MouseButton1Click:Connect(function()
+			for i,v in pairs(panel.side.tabs:GetChildren()) do
+				if v:IsA("Frame") then
+					if v ~= G2L["2"] then
+						panel.pages[v.Name].Visible = false
+						animate(v.trigger,ti,{BackgroundColor3=Color3.fromRGB(13,13,13)})
+						animate(v.UIPadding,ti,{PaddingLeft=UDim.new(0,-29)})
+						animate(v.trigger.Icon,ti,{ImageColor3=Color3.fromRGB(227,227,227)})
+						animate(v.trigger.Header,ti,{TextColor3=Color3.fromRGB(151,151,151)})
+					else
+						panel.pages[v.Name].Visible = true
+						animate(v.trigger,ti,{BackgroundColor3=Color3.fromRGB(36,36,36)})
+						animate(v.UIPadding,ti,{PaddingLeft=UDim.new(0,-15)})
+						animate(v.trigger.Icon,ti,{ImageColor3=Color3.fromRGB(227,227,227)})
+						animate(v.trigger.Header,ti,{TextColor3=Color3.fromRGB(227,227,227)})
+					end
+				end
+			end
+		end)
+
+		local tab = {}
+
+		function tab:Section(name)
+			local G2L = {}
+			sections+=1
+			-- StarterGui.ScreenGui.content.Open Section
+			G2L["3"] = Instance.new("Frame", stab);
+			G2L["3"]["BorderSizePixel"] = 0;
+			G2L["3"]["BackgroundColor3"] = Color3.fromRGB(34, 34, 34);
+			G2L["3"]["BackgroundTransparency"] = 1;
+			G2L["3"]["Position"] = UDim2.new(0,10,0,0)
+			G2L["3"]["Size"] = UDim2.new(1, -20, 0, 0);
+			G2L["3"]["LayoutOrder"] = sections
+			G2L["3"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+			G2L["3"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+			G2L["3"]["Name"] = name;
+
+			-- StarterGui.ScreenGui.content.Open Section.top
+			G2L["4"] = Instance.new("Frame", G2L["3"]);
+			G2L["4"]["ZIndex"] = 2;
+			G2L["4"]["BorderSizePixel"] = 0;
+			G2L["4"]["BackgroundColor3"] = Color3.fromRGB(17, 17, 17);
+			G2L["4"]["Size"] = UDim2.new(1, 0, 0, 30);
+			G2L["4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+			G2L["4"]["Name"] = [[top]];
+
+			-- StarterGui.ScreenGui.content.Open Section.top.UICorner
+			G2L["5"] = Instance.new("UICorner", G2L["4"]);
+			G2L["5"]["CornerRadius"] = UDim.new(0, 7);
+
+			-- StarterGui.ScreenGui.content.Open Section.top.cover
+			G2L["6"] = Instance.new("Frame", G2L["4"]);
+			G2L["6"]["ZIndex"] = 2;
+			G2L["6"]["BorderSizePixel"] = 0;
+			G2L["6"]["BackgroundColor3"] = Color3.fromRGB(17, 17, 17);
+			G2L["6"]["Size"] = UDim2.new(1, 0, 0, 18);
+			G2L["6"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+			G2L["6"]["Position"] = UDim2.new(0, 0, 1, -18);
+			G2L["6"]["Name"] = [[cover]];
+
+			-- StarterGui.ScreenGui.content.Open Section.top.cover.UICorner
+			G2L["7"] = Instance.new("UICorner", G2L["6"]);
+			G2L["7"]["CornerRadius"] = UDim.new(0, 0);
+
+			-- StarterGui.ScreenGui.content.Open Section.top.Header
+			G2L["8"] = Instance.new("TextLabel", G2L["4"]);
+			G2L["8"]["ZIndex"] = 3;
+			G2L["8"]["BorderSizePixel"] = 0;
+			G2L["8"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+			G2L["8"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+			G2L["8"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+			G2L["8"]["TextSize"] = 14;
+			G2L["8"]["TextColor3"] = Color3.fromRGB(228, 228, 228);
+			G2L["8"]["Size"] = UDim2.new(1, 0, 1, 0);
+			G2L["8"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+			G2L["8"]["Text"] = name
+			G2L["8"]["Name"] = [[Header]];
+			G2L["8"]["BackgroundTransparency"] = 1;
+
+			-- StarterGui.ScreenGui.content.Open Section.top.Header.UIPadding
+			G2L["9"] = Instance.new("UIPadding", G2L["8"]);
+			G2L["9"]["PaddingLeft"] = UDim.new(0, 10);
+
+			-- StarterGui.ScreenGui.content.Open Section.top.Hide
+			G2L["a"] = Instance.new("ImageButton", G2L["4"]);
+			G2L["a"]["ZIndex"] = 3;
+			G2L["a"]["BorderSizePixel"] = 0;
+			G2L["a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+			G2L["a"]["ImageColor3"] = Color3.fromRGB(228, 228, 228);
+			G2L["a"]["AnchorPoint"] = Vector2.new(0, 0.5);
+			G2L["a"]["Image"] = [[rbxassetid://7072706663]];
+			G2L["a"]["Size"] = UDim2.new(0, 20, 0, 20);
+			G2L["a"]["Name"] = [[Hide]];
+			G2L["a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+			G2L["a"]["Position"] = UDim2.new(1, -30, 0.5, 0);
+			G2L["a"]["BackgroundTransparency"] = 1;
+
+			-- StarterGui.ScreenGui.content.Open Section.items
+			G2L["b"] = Instance.new("Frame", G2L["3"]);
+			G2L["b"]["BorderSizePixel"] = 0;
+			G2L["b"]["BackgroundColor3"] = Color3.fromRGB(14, 14, 14);
+			G2L["b"]["Size"] = UDim2.new(1, 0, 0, 30);
+			G2L["b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+			G2L["b"]["Position"] = UDim2.new(0, 0, 0, 25);
+			G2L["b"]["ClipsDescendants"] = true;
+			G2L["b"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+			G2L["b"]["Name"] = [[items]];
+
+			-- StarterGui.ScreenGui.content.Open Section.items.UICorner
+			G2L["c"] = Instance.new("UICorner", G2L["b"]);
+			G2L["c"]["CornerRadius"] = UDim.new(0, 7);
+
+			-- StarterGui.ScreenGui.content.Open Section.items.UIListLayout
+			G2L["d"] = Instance.new("UIListLayout", G2L["b"]);
+			G2L["d"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
+			G2L["d"]["Padding"] = UDim.new(0, 5);
+			G2L["d"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+			-- StarterGui.ScreenGui.content.Open Section.items.UIPadding
+			G2L["13"] = Instance.new("UIPadding", G2L["b"]);
+			G2L["13"]["PaddingTop"] = UDim.new(0, 10);
+			G2L["13"]["PaddingBottom"] = UDim.new(0, 6);
+
+			local hidden = false
+
+			G2L["a"].MouseButton1Click:Connect(function()
+				if hidden then
+					animate(G2L["a"],ti,{Rotation=0})
+					G2L["b"].Visible = true
+					G2L["7"]["CornerRadius"] = UDim.new(0,0)
+					hidden = false
+				else
+					animate(G2L["a"],ti,{Rotation=-90})
+					G2L["b"].Visible = false
+					G2L["7"]["CornerRadius"] = UDim.new(0,7)
+					hidden = true
+				end
+			end)
+
+			local items = G2L["b"]
+
+			local section = {}
+
+			function section:Button(btnconfig)
+				local G2L = {}
+				-- StarterGui.ScreenGui.content.Open Section.items.Button
+				G2L["e"] = Instance.new("ImageButton", items);
+				G2L["e"]["BorderSizePixel"] = 0;
+				G2L["e"]["AutoButtonColor"] = false;
+				G2L["e"]["BackgroundColor3"] = Color3.fromRGB(17, 17, 17);
+				G2L["e"]["Size"] = UDim2.new(1, -10, 0, 27);
+				G2L["e"]["Name"] = btnconfig.Name
+				G2L["e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Button.UICorner
+				G2L["f"] = Instance.new("UICorner", G2L["e"]);
+				G2L["f"]["CornerRadius"] = UDim.new(0, 5);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Button.Header
+				G2L["10"] = Instance.new("TextLabel", G2L["e"]);
+				G2L["10"]["TextWrapped"] = true;
+				G2L["10"]["ZIndex"] = 2;
+				G2L["10"]["BorderSizePixel"] = 0;
+				G2L["10"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				G2L["10"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				G2L["10"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+				G2L["10"]["TextSize"] = 13;
+				G2L["10"]["TextColor3"] = Color3.fromRGB(228, 228, 228);
+				G2L["10"]["Size"] = UDim2.new(1, 0, 1, 0);
+				G2L["10"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				G2L["10"]["Text"] = btnconfig.Name
+				G2L["10"]["Name"] = [[Header]];
+				G2L["10"]["BackgroundTransparency"] = 1;
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Button.Header.UIPadding
+				G2L["11"] = Instance.new("UIPadding", G2L["10"]);
+				G2L["11"]["PaddingLeft"] = UDim.new(0, 10);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Button.UIStroke
+				G2L["12"] = Instance.new("UIStroke", G2L["e"]);
+				G2L["12"]["Color"] = Color3.fromRGB(37, 37, 37);
+				G2L["12"]["Thickness"] = 0.6000000238418579;
+				G2L["12"]["Transparency"] = 0.4399999976158142;
+
+				G2L["e"].MouseButton1Click:Connect(function()
+					btnconfig.Callback()
+				end)
+			end
+
+			function section:Toggle(togconfig)
+				local G2L = {}
+				-- StarterGui.ScreenGui.content.Open Section.items.Toggle
+				G2L["14"] = Instance.new("ImageButton", items);
+				G2L["14"]["BorderSizePixel"] = 0;
+				G2L["14"]["AutoButtonColor"] = false;
+				G2L["14"]["BackgroundColor3"] = Color3.fromRGB(17, 17, 17);
+				G2L["14"]["Size"] = UDim2.new(1, -10, 0, 27);
+				G2L["14"]["Name"] = togconfig.Name
+				G2L["14"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Toggle.UICorner
+				G2L["15"] = Instance.new("UICorner", G2L["14"]);
+				G2L["15"]["CornerRadius"] = UDim.new(0, 5);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Toggle.Header
+				G2L["16"] = Instance.new("TextLabel", G2L["14"]);
+				G2L["16"]["TextWrapped"] = true;
+				G2L["16"]["ZIndex"] = 2;
+				G2L["16"]["BorderSizePixel"] = 0;
+				G2L["16"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				G2L["16"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				G2L["16"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+				G2L["16"]["TextSize"] = 13;
+				G2L["16"]["TextColor3"] = Color3.fromRGB(228, 228, 228);
+				G2L["16"]["Size"] = UDim2.new(1, 0, 1, 0);
+				G2L["16"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				G2L["16"]["Text"] = togconfig.Name
+				G2L["16"]["Name"] = [[Header]];
+				G2L["16"]["BackgroundTransparency"] = 1;
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Toggle.Header.UIPadding
+				G2L["17"] = Instance.new("UIPadding", G2L["16"]);
+				G2L["17"]["PaddingLeft"] = UDim.new(0, 10);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Toggle.UIStroke
+				G2L["18"] = Instance.new("UIStroke", G2L["14"]);
+				G2L["18"]["Color"] = Color3.fromRGB(37, 37, 37);
+				G2L["18"]["Thickness"] = 0.6000000238418579;
+				G2L["18"]["Transparency"] = 0.4399999976158142;
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Toggle.Box
+				G2L["19"] = Instance.new("ImageButton", G2L["14"]);
+				G2L["19"]["ZIndex"] = 2;
+				G2L["19"]["BorderSizePixel"] = 0;
+				G2L["19"]["AutoButtonColor"] = false;
+				G2L["19"]["BackgroundColor3"] = Color3.fromRGB(14, 14, 14);
+				G2L["19"]["ImageColor3"] = Color3.fromRGB(228, 228, 228);
+				G2L["19"]["AnchorPoint"] = Vector2.new(0, 0.5);
+				G2L["19"]["Size"] = UDim2.new(0, 20, 0, 20);
+				G2L["19"]["Name"] = [[Box]];
+				G2L["19"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				G2L["19"]["Position"] = UDim2.new(1, -25, 0.5, 0);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Toggle.Box.UICorner
+				G2L["1a"] = Instance.new("UICorner", G2L["19"]);
+				G2L["1a"]["CornerRadius"] = UDim.new(0, 5);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Toggle.Box.Icon
+				G2L["1b"] = Instance.new("ImageLabel", G2L["19"]);
+				G2L["1b"]["ZIndex"] = 2;
+				G2L["1b"]["BorderSizePixel"] = 0;
+				G2L["1b"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				G2L["1b"]["ImageColor3"] = Color3.fromRGB(0,0,0);
+				G2L["1b"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+				G2L["1b"]["Image"] = [[rbxassetid://7072706620]];
+				G2L["1b"]["ImageTransparency"] = 1
+				G2L["1b"]["Size"] = UDim2.new(0.6, 0, 0.6, 0);
+				G2L["1b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				G2L["1b"]["Name"] = [[Icon]];
+				G2L["1b"]["BackgroundTransparency"] = 1;
+				G2L["1b"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+				local bool = false
+
+				G2L["14"].MouseButton1Down:Connect(function()
+					if bool == false then
+						animate(G2L["19"],ti,{BackgroundColor3=Color3.fromRGB(255,179,26)})
+						animate(G2L["1b"],ti,{ImageTransparency=0})
+						bool = true
+					else
+						animate(G2L["19"],ti,{BackgroundColor3=Color3.fromRGB(14,14,14)})
+						animate(G2L["1b"],ti,{ImageTransparency=1})
+						bool = false
+					end
+					togconfig.Callback(bool)
+				end)
+
+				if togconfig.Enabled then
+					animate(G2L["19"],ti,{BackgroundColor3=Color3.fromRGB(255,179,26)})
+					animate(G2L["1b"],ti,{ImageTransparency=0})
+					bool = true
+					togconfig.Callback(bool)
+				end
+			end
+
+			function section:Input(inconfig)
+				local G2L = {}
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Input
+				G2L["1c"] = Instance.new("ImageButton", items);
+				G2L["1c"]["BorderSizePixel"] = 0;
+				G2L["1c"]["AutoButtonColor"] = false;
+				G2L["1c"]["BackgroundColor3"] = Color3.fromRGB(17, 17, 17);
+				G2L["1c"]["Size"] = UDim2.new(1, -10, 0, 27);
+				G2L["1c"]["Name"] = inconfig.Name
+				G2L["1c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Input.UICorner
+				G2L["1d"] = Instance.new("UICorner", G2L["1c"]);
+				G2L["1d"]["CornerRadius"] = UDim.new(0, 5);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Input.Header
+				G2L["1e"] = Instance.new("TextLabel", G2L["1c"]);
+				G2L["1e"]["TextWrapped"] = true;
+				G2L["1e"]["ZIndex"] = 2;
+				G2L["1e"]["BorderSizePixel"] = 0;
+				G2L["1e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				G2L["1e"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				G2L["1e"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+				G2L["1e"]["TextSize"] = 13;
+				G2L["1e"]["TextColor3"] = Color3.fromRGB(228, 228, 228);
+				G2L["1e"]["Size"] = UDim2.new(1, 0, 1, 0);
+				G2L["1e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				G2L["1e"]["Text"] = inconfig.Name
+				G2L["1e"]["Name"] = [[Header]];
+				G2L["1e"]["BackgroundTransparency"] = 1;
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Input.Header.UIPadding
+				G2L["1f"] = Instance.new("UIPadding", G2L["1e"]);
+				G2L["1f"]["PaddingLeft"] = UDim.new(0, 10);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Input.UIStroke
+				G2L["20"] = Instance.new("UIStroke", G2L["1c"]);
+				G2L["20"]["Color"] = Color3.fromRGB(37, 37, 37);
+				G2L["20"]["Thickness"] = 0.6000000238418579;
+				G2L["20"]["Transparency"] = 0.4399999976158142;
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Input.Input
+				G2L["21"] = Instance.new("ImageButton", G2L["1c"]);
+				G2L["21"]["ZIndex"] = 2;
+				G2L["21"]["BorderSizePixel"] = 0;
+				G2L["21"]["AutoButtonColor"] = false;
+				G2L["21"]["BackgroundColor3"] = Color3.fromRGB(14, 14, 14);
+				G2L["21"]["ImageColor3"] = Color3.fromRGB(228, 228, 228);
+				G2L["21"]["AnchorPoint"] = Vector2.new(0, 0.5);
+				G2L["21"]["Size"] = UDim2.new(0, 65, 0, 20);
+				G2L["21"]["Name"] = [[Input]];
+				G2L["21"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				G2L["21"]["Position"] = UDim2.new(0.806034505367279, -25, 0.5, 0);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Input.Input.UICorner
+				G2L["22"] = Instance.new("UICorner", G2L["21"]);
+				G2L["22"]["CornerRadius"] = UDim.new(0, 5);
+
+				-- StarterGui.ScreenGui.content.Open Section.items.Input.Input.Box
+				G2L["23"] = Instance.new("TextBox", G2L["21"]);
+				G2L["23"]["ZIndex"] = 2;
+				G2L["23"]["BorderSizePixel"] = 0;
+				G2L["23"]["TextSize"] = 12;
+				G2L["23"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				G2L["23"]["TextColor3"] = Color3.fromRGB(191, 191, 191);
+				G2L["23"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+				G2L["23"]["BackgroundTransparency"] = 1;
+				G2L["23"]["PlaceholderText"] = inconfig.PlaceHolder
+				G2L["23"]["Size"] = UDim2.new(1, 0, 1, 0);
+				G2L["23"]["ClipsDescendants"] = true;
+				G2L["23"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				G2L["23"]["Text"] = inconfig.Text
+				G2L["23"]["Name"] = [[Box]];
+				G2L["23"]["ClearTextOnFocus"] = inconfig.ClearOnFocus;
+
+				G2L["23"].FocusLost:Connect(function()
+					inconfig.Callback(G2L["23"].Text)
+				end)
+			end
+			
+			function section:Label(text)
+				-- StarterGui.Panel.UI.side.Header
+				G2L["7"] = Instance.new("TextLabel", items);
+				G2L["7"]["BorderSizePixel"] = 0;
+				G2L["7"]["RichText"] = true;
+				G2L["7"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				G2L["7"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+				G2L["7"]["TextSize"] = 14;
+				G2L["7"]["TextColor3"] = Color3.fromRGB(228, 228, 228);
+				G2L["7"]["Size"] = UDim2.new(1, 0, 0, 23);
+				G2L["7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				G2L["7"]["Text"] = text
+				G2L["7"]["Name"] = [[Header]];
+				G2L["7"]["BackgroundTransparency"] = 1;
+
+				-- StarterGui.Panel.UI.side.Header.UIPadding
+				G2L["8"] = Instance.new("UIPadding", G2L["7"]);
+				G2L["8"]["PaddingLeft"] = UDim.new(0, 10);
+			end
+
+			return section
+
+		end
+
+		return tab
 	end
-})
 
--- // maps tab
-
-local maps = Maps:Section("Maps")
-local custommap = Maps:Section("Custom Map")
-local savedmaps = Maps:Section("Saved Maps")
-local function addsaved(name)
-    savedmaps:Button({
-        Name = name;
-        Callback = function()
-            loadbuild(loadstring(readfile("f3x maps/"..name))())
-        end
-    })
+	return window
 end
-if not isfolder("f3x maps") then makefolder("f3x maps") end
-for i,v in pairs(listfiles("f3x maps")) do
-    local filename = string.split(v,"/");filename=filename[#filename]
-    addsaved(filename)
-end
 
-maps:Button({
-	Name = "Tree House";
-	Callback = function()
-		loadbuild(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/tree-house.lua"))())
-	end
-})
-
-maps:Button({
-	Name = "Tower";
-	Callback = function()
-		loadbuild(loadstring(game:HttpGet("https://pastebin.com/raw/2bnc2AED"))())
-	end
-})
-
-maps:Button({
-	Name = "Doomspire";
-	Callback = function()
-		loadbuild(loadstring(game:HttpGet("https://raw.githubusercontent.com/SkireScripts/F3X-Panel/main/maps/doomspire.lua"))())
-	end
-})
-
-local url, name
-custommap:Input({
-    Name = "Custom Map",
-    ClearOnFocus = false,
-    PlaceHolder = "Map Source/Url",
-    Text = "",
-    Callback = function(t)
-        url = t
-    end
-})
-custommap:Button({
-	Name = "Load Map";
-	Callback = function()
-		loadbuild(loadstring(game:HttpGet(url))())
-	end
-})
-custommap:Input({
-    Name = "Map Name",
-    ClearOnFocus = false,
-    PlaceHolder = "Map Name",
-    Text = "",
-    Callback = function(t)
-        name = t
-    end
-})
-custommap:Button({
-	Name = "Save Map";
-	Callback = function()
-		if not isfolder("f3x maps") then makefolder("f3x maps") end
-        writefile("f3x maps/"..name..".lua", game:HttpGet(url))
-        addsaved(name..".lua")
-    end
-})
-
--- // players tab
-
-local ats = players:Section("Player Controls")
-local target = ""
-
-ats:Label("Target")
-ats:Input({
-    Name = "Target",
-    ClearOnFocus = false,
-    PlaceHolder = "User",
-    Text = "",
-    Callback = function(t)
-        target = getplayer(t:lower())
-        if target == nil then
-            target = t:lower()
-        end
-    end
-})
-ats:Label("Kill")
-ats:Button({
-    Name = "Kill",
-    Callback = function()
-        killplayer(target)
-    end
-})
-
-ats:Toggle({
-    Name = "Loop kill",
-    Enabled = false,
-    Callback = function(b)
-        getgenv().settings["loop kill"] = b
-        while true do wait()
-             if getgenv().settings["loop kill"] then
-               killplayer(target)
-            end
-        end
-    end
-})
-ats:Label("Tools")
-ats:Button({
-    Name = "Remove tools",
-    Callback = function()
-        removetools(target)
-    end
-})
-
-ats:Toggle({
-    Name = "Loop remove tools",
-    Enabled = false,
-    Callback = function(b)
-        getgenv().settings["loop tools"] = b
-        while true do wait()
-             if getgenv().settings["loop tools"] then
-               removetools(target)
-            end
-        end
-    end
-})
-
--- // credits tab
-
-local credits = credits:Section("Credits")
-credits:Label("Skire - Main dev")
-credits:Label("logs - idea guy")
+return UI
